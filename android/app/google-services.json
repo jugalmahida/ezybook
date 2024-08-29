@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "150542160187",
+    "firebase_url": "https://ezybook-8d7cb-default-rtdb.firebaseio.com",
+    "project_id": "ezybook-8d7cb",
+    "storage_bucket": "ezybook-8d7cb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150542160187:android:5d9dede4758826f167a71e",
+        "android_client_info": {
+          "package_name": "com.example.ezybook"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAM8Qmvs6bLR03rW6E7eaf2Ufrk7UCbC6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150542160187:android:588bfab123aba5e167a71e",
+        "android_client_info": {
+          "package_name": "com.example.ezybook"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAM8Qmvs6bLR03rW6E7eaf2Ufrk7UCbC6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
