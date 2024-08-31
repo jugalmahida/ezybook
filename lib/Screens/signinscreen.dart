@@ -142,8 +142,8 @@ class _SigninScreenState extends State<SigninScreen> {
                                     false) {
                                   final email = _email.text.trim();
                                   final password = _password.text.trim();
-                                  print(
-                                      "email - $email | password - $password");
+                                  // print(
+                                  //     "email - $email | password - $password");
                                   Navigator.popAndPushNamed(
                                       context, '/home_screen');
                                 }
