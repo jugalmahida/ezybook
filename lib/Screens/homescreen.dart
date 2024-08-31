@@ -18,7 +18,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "HairSalons",
       "name": "Glamour Cuts",
-      "rating": "4.5",
       "location": "Downtown, Cityville",
       "mainimage": "assets/images/Im1.png",
       "aboutshop":
@@ -28,7 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "HairSalons",
       "name": "Style Haven",
-      "rating": "4.8",
       "location": "Uptown, Cityville",
       "mainimage": "assets/images/Im2.png",
       "aboutshop":
@@ -38,7 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "HairSalons",
       "name": "Chic Cuts",
-      "rating": "4.6",
       "location": "Westside, Cityville",
       "mainimage": "assets/images/onboard1.png",
       "aboutshop":
@@ -48,7 +45,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "HairSalons",
       "name": "Elegant Styles",
-      "rating": "4.7",
       "location": "Eastside, Cityville",
       "mainimage": "assets/images/onboard2.png",
       "aboutshop":
@@ -58,7 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "HairSalons",
       "name": "Refined Looks",
-      "rating": "4.9",
       "location": "Central, Cityville",
       "mainimage": "assets/images/onboard3.png",
       "aboutshop":
@@ -68,7 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "HairSalons",
       "name": "Best Hair's",
-      "rating": "3.0",
       "location": "Uptown, Cityville",
       "mainimage": "assets/images/Im2.png",
       "aboutshop":
@@ -78,7 +72,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Clinic",
       "name": "Wellness Clinic",
-      "rating": "4.5",
       "location": "Northside, Cityville",
       "mainimage": "assets/images/Im3.png",
       "aboutshop":
@@ -88,7 +81,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Clinic",
       "name": "City Health Center",
-      "rating": "4.6",
       "location": "Southside, Cityville",
       "mainimage": "assets/images/Im4.png",
       "aboutshop":
@@ -98,7 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Clinic",
       "name": "Family Care Clinic",
-      "rating": "4.7",
       "location": "Eastside, Cityville",
       "mainimage": "assets/images/Im5.png",
       "aboutshop":
@@ -108,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Clinic",
       "name": "Healthy Horizons Clinic",
-      "rating": "4.8",
       "location": "Westside, Cityville",
       "mainimage": "assets/images/Im6.png",
       "aboutshop":
@@ -118,7 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Clinic",
       "name": "Advanced Medical Center",
-      "rating": "4.9",
       "location": "Central, Cityville",
       "mainimage": "assets/images/Im7.png",
       "aboutshop":
@@ -128,7 +117,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Clinic",
       "name": "Best Clinic's",
-      "rating": "3.9",
       "location": "Central, Cityville",
       "mainimage": "assets/images/Im7.png",
       "aboutshop":
@@ -138,7 +126,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Restaurant",
       "name": "Gourmet Bistro",
-      "rating": "4.6",
       "location": "Downtown, Cityville",
       "mainimage": "assets/images/Im8.png",
       "aboutshop":
@@ -148,7 +135,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Restaurant",
       "name": "The Dine Spot",
-      "rating": "4.7",
       "location": "Uptown, Cityville",
       "mainimage": "assets/images/Im9.png",
       "aboutshop":
@@ -158,7 +144,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Restaurant",
       "name": "Urban Eats",
-      "rating": "4.5",
       "location": "Westside, Cityville",
       "mainimage": "assets/images/Im10.png",
       "aboutshop":
@@ -168,7 +153,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Restaurant",
       "name": "Taste of Italy",
-      "rating": "4.8",
       "location": "Eastside, Cityville",
       "mainimage": "assets/images/Im11.png",
       "aboutshop":
@@ -178,7 +162,6 @@ class _HomeScreenState extends State<HomeScreen> {
     {
       "category": "Restaurant",
       "name": "Seafood Haven",
-      "rating": "4.9",
       "location": "Central, Cityville",
       "mainimage": "assets/images/Im12.png",
       "aboutshop":

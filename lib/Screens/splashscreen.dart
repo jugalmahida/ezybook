@@ -18,7 +18,8 @@ class _SplashScreenState extends State<SplashScreen> {
       if (user == null) {
         print('User is currently signed out!');
         Timer(const Duration(seconds: 3), () {
-          Navigator.pushReplacementNamed(context, '/signin_screen');
+          Navigator.pushReplacementNamed(context, '/home_screen');
+          // Navigator.pushReplacementNamed(context, '/signin_screen');
         });
       } else {
         print('User is signed in!');
