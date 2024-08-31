@@ -173,7 +173,6 @@ class _SignupScreenState extends State<SignupScreen> {
                                 final number = _mobileNumber.text.trim();
                                 final email = _email.text.trim();
                                 final password = _password.text.trim();
-
                                 print(
                                     "Fullname - $name | number - $number | email - $email | password - $password");
                                 // Navigator.pushNamed(context, '/optverification_screen');
