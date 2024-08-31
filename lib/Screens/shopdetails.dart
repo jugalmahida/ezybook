@@ -51,14 +51,13 @@ class _ShopDetailsState extends State<ShopDetails> {
     final arguments =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     double screenWidth = MediaQuery.of(context).size.width;
-    double screenheight = MediaQuery.sizeOf(context).height;
+    double screenheight = MediaQuery.sizeOf(context).height * 0.55;
 
     // Use default values or handle missing arguments
     final String name = arguments?['name'] ?? 'Unknown Shop';
     final String charge = arguments?['charge'] ?? 'Unknown Charge';
     final String location = arguments?['location'] ?? 'Unknown Location';
     final String mainImage = arguments?['image'] ?? 'assets/images/Im1.png';
-    final String rating = arguments?['rating'] ?? '0.0';
     final String aboutShop =
         arguments?['aboutshop'] ?? 'Not available'; // Corrected key
 
@@ -74,7 +73,7 @@ class _ShopDetailsState extends State<ShopDetails> {
           Image.asset(
             mainImage,
             width: screenWidth,
-            height: screenheight - 500,
+            height: screenheight,
             fit: BoxFit.fill,
           ),
           Expanded(
@@ -90,14 +89,7 @@ class _ShopDetailsState extends State<ShopDetails> {
                       style: const TextStyle(fontSize: 25),
                     ),
                     // Shop location
-                    Text(
-                      location,
-                      style: const TextStyle(fontSize: 15, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 15),
-                    // Other details
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
                         Row(
                           children: [
@@ -110,77 +102,18 @@ class _ShopDetailsState extends State<ShopDetails> {
                             ),
                           ],
                         ),
-                        Row(
-                          children: [
-                            Image.asset("assets/images/Star.png"),
-                            const SizedBox(width: 5),
-                            Text(
-                              rating,
-                              style: const TextStyle(fontSize: 17),
-                            ),
-                            const SizedBox(width: 5),
-                            const Text(
-                              "(2498)",
-                              style:
-                                  TextStyle(color: Colors.grey, fontSize: 17),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            const SizedBox(width: 5),
-                            Text(
-                              charge,
-                              style: const TextStyle(
-                                  fontSize: 17, color: Colors.blue),
-                            ),
-                          ],
-                        )
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    // Images row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(60),
-                          child: Image.asset(
-                            "assets/images/DIm1.png",
-                            width: 80,
-                            height: 80,
-                          ),
-                        ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(60),
-                          child: Image.asset(
-                            "assets/images/DIm2.png",
-                            width: 80,
-                            height: 80,
-                          ),
-                        ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(60),
-                          child: Image.asset(
-                            "assets/images/DIm3.png",
-                            width: 80,
-                            height: 80,
-                          ),
-                        ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(60),
-                          child: Image.asset(
-                            "assets/images/DIm4.png",
-                            width: 80,
-                            height: 80,
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 10),
+                    Text(
+                      "Fees per client - $charge",
+                      style: const TextStyle(fontSize: 18, color: Colors.blue),
                     ),
-                    const SizedBox(height: 20),
+                    // Other details
+                    const SizedBox(height: 10),
                     // About section
                     const Text(
-                      "About Destination",
+                      "About Shop",
                       style: TextStyle(fontSize: 25),
                     ),
                     const SizedBox(height: 10),

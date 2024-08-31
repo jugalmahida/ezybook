@@ -17,19 +17,13 @@ class CategorySection extends StatefulWidget {
 
 class _CategorySectionState extends State<CategorySection> {
   // Initialize a map to track favorite status of each shop
-
   @override
   Widget build(BuildContext context) {
-    // Convert and sort the shops based on their rating
-    List<Map<String, String>> sortedShopDetails =
-        List.from(widget.allshopDetails);
-    sortedShopDetails.sort((a, b) {
-      double ratingA = double.parse(a['rating']!);
-      double ratingB = double.parse(b['rating']!);
-      return ratingB.compareTo(ratingA); // Descending order
-    });
+    double imageSize = MediaQuery.of(context).size.height * 0.26;
+    double rowSize = MediaQuery.of(context).size.height * 0.38;
 
-    List<Map<String, String>> topFiveShops = sortedShopDetails.take(5).toList();
+    List<Map<String, String>> topFiveShops =
+        widget.allshopDetails.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -43,15 +37,12 @@ class _CategorySectionState extends State<CategorySection> {
         ),
         const SizedBox(height: 5.0),
         SizedBox(
-          height: 317.0,
+          height: rowSize,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: topFiveShops.length,
             itemBuilder: (BuildContext context, int index) {
               final shop = topFiveShops[index];
-              // final shopName = shop['name']!;
-              // final isFavorite = _favorites[shopName] ?? false;
-
               return GestureDetector(
                 onTap: () {
                   Navigator.pushNamed(
@@ -62,64 +53,45 @@ class _CategorySectionState extends State<CategorySection> {
                       'charge': "₹${shop['price']}",
                       'location': shop['location'],
                       'image': shop['mainimage'],
-                      'rating': shop['rating'],
                       'aboutshop': shop['aboutshop'],
                     },
                   );
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Stack(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Image.asset(
+                        width: imageSize,
+                        height: imageSize,
+                        shop['mainimage']!,
+                        fit: BoxFit.fill,
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
                         children: [
-                          Image.asset(
-                            width: 250,
-                            height: 250,
-                            shop['mainimage']!,
-                            fit: BoxFit.fill,
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              const SizedBox(width: 20),
-                              Text(
-                                shop['name']!,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 16),
-                              ),
-                              const SizedBox(width: 10),
-                              Image.asset("assets/images/Star.png"),
-                              const SizedBox(width: 5),
-                              Text(shop['rating']!),
-                            ],
-                          ),
-                          const SizedBox(height: 5),
-                          Row(
-                            children: [
-                              const SizedBox(width: 20),
-                              Image.asset("assets/images/location.png"),
-                              const SizedBox(width: 10),
-                              Text(
-                                shop['location']!,
-                                style: const TextStyle(color: Colors.grey),
-                              ),
-                            ],
+                          const SizedBox(width: 20),
+                          Text(
+                            shop['name']!,
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 16),
                           ),
                         ],
                       ),
-                      // Positioned(
-                      //   right: 8,
-                      //   top: 8,
-                      //   child: IconButton(
-                      //     icon: Icon(
-                      //       isFavorite ? Icons.favorite : Icons.favorite_border,
-                      //       color: isFavorite ? Colors.red : Colors.white,
-                      //     ),
-                      //     onPressed: () => _toggleFavorite(shopName),
-                      //   ),
-                      // ),
+                      const SizedBox(height: 5),
+                      Row(
+                        children: [
+                          const SizedBox(width: 20),
+                          Image.asset("assets/images/location.png"),
+                          const SizedBox(width: 10),
+                          Text(
+                            shop['location']!,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -127,7 +99,6 @@ class _CategorySectionState extends State<CategorySection> {
             },
           ),
         ),
-        const SizedBox(height: 10),
       ],
     );
   }

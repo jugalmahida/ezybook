@@ -34,8 +34,8 @@ class _UserProfileState extends State<UserProfile> {
               const SizedBox(
                 height: 15,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
                 children: [
                   getCard(name: "Reward Point", value: "360"),
                   getCard(name: "Booked Points", value: "238"),

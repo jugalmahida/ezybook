@@ -94,7 +94,6 @@ class _TimeTableState extends State<TimeTable> {
           children: [
             SizedBox(
               width: screenWidth,
-              height: 150,
               child: Card(
                 elevation: 2,
                 child: Column(
@@ -141,24 +140,24 @@ class _TimeTableState extends State<TimeTable> {
                         ],
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(10.0, 5, 10, 0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: _currentWeek.map((date) {
-                          bool isSelected = _selectedDate?.day == date.day &&
-                              _selectedDate?.month == date.month &&
-                              _selectedDate?.year == date.year;
-                          return GestureDetector(
-                            onTap: () {
-                              if (date.isAfter(DateTime.now()
-                                  .subtract(const Duration(days: 1)))) {
-                                setState(() {
-                                  _selectedDate = date;
-                                  _generateHourlySlots(); // Update slots when date changes
-                                });
-                              }
-                            },
+                    Wrap(
+                      spacing: 10,
+                      children: _currentWeek.map((date) {
+                        bool isSelected = _selectedDate?.day == date.day &&
+                            _selectedDate?.month == date.month &&
+                            _selectedDate?.year == date.year;
+                        return GestureDetector(
+                          onTap: () {
+                            if (date.isAfter(DateTime.now()
+                                .subtract(const Duration(days: 1)))) {
+                              setState(() {
+                                _selectedDate = date;
+                                _generateHourlySlots(); // Update slots when date changes
+                              });
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(2.0),
                             child: Container(
                               decoration: BoxDecoration(
                                 color: date.isAfter(DateTime.now()
@@ -205,9 +204,9 @@ class _TimeTableState extends State<TimeTable> {
                                 ],
                               ),
                             ),
-                          );
-                        }).toList(),
-                      ),
+                          ),
+                        );
+                      }).toList(),
                     ),
                   ],
                 ),
@@ -226,6 +225,7 @@ class _TimeTableState extends State<TimeTable> {
                       // Show bottom sheet on tap
                       if (slotStatus == "Free") {
                         showModalBottomSheet(
+                          isScrollControlled: true,
                           context: context,
                           builder: (context) {
                             return Container(
