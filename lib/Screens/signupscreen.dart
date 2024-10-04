@@ -1,4 +1,15 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:ezybook/models/user.dart';
+import 'package:ezybook/widgets/button.dart';
+import 'package:ezybook/widgets/dialog.dart';
+import 'package:ezybook/widgets/sizedbox.dart';
+import 'package:ezybook/widgets/textfield.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -15,6 +26,10 @@ class _SignupScreenState extends State<SignupScreen> {
   late final TextEditingController _password;
 
   bool passwordVisible = false;
+
+  late UserModel user;
+
+  Timer? emailTimer;
 
   @override
   void initState() {
@@ -50,18 +65,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     "Please fill the details and create account",
                     style: TextStyle(color: Colors.grey),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    keyboardType: TextInputType.name,
+                  get20height(),
+                  getTextFiled(
+                    hintText: "Enter Full Name",
                     controller: _fullName,
-                    decoration: InputDecoration(
-                      hintText: "Enter Full Name",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
+                    keyboardType: TextInputType.name,
                     validator: (value) {
                       value = value?.trim() ?? '';
                       if (value.isEmpty) {
@@ -70,20 +78,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    keyboardType: TextInputType.phone,
+                  get20height(),
+                  getTextFiled(
+                    hintText: "Enter Mobile Number",
                     controller: _mobileNumber,
-                    decoration: InputDecoration(
-                      hintText: "Enter Mobile Number",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
+                    keyboardType: TextInputType.phone,
                     validator: (value) {
                       value = value?.trim() ?? '';
                       if (value.isEmpty) {
@@ -95,20 +94,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    keyboardType: TextInputType.emailAddress,
+                  get20height(),
+                  getTextFiled(
+                    hintText: "Enter Email",
                     controller: _email,
-                    decoration: InputDecoration(
-                      hintText: "Enter Email",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
+                    keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       value = value?.trim() ?? '';
                       if (value.isEmpty) {
@@ -120,9 +110,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  get20height(),
                   TextFormField(
                     autocorrect: false,
                     enableSuggestions: false,
@@ -155,57 +143,34 @@ class _SignupScreenState extends State<SignupScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 45,
-                          child: FilledButton(
-                            style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFF24BAEC),
-                            ),
-                            onPressed: () {
-                              if (_formKey.currentState?.validate() ?? false) {
-                                final name = _fullName.text.trim();
-                                final number = _mobileNumber.text.trim();
-                                final email = _email.text.trim();
-                                final password = _password.text.trim();
-                                print(
-                                    "Fullname - $name | number - $number | email - $email | password - $password");
-                                // Navigator.pushNamed(context, '/optverification_screen');
-                              }
-                            },
-                            child: const Text(
-                              'Sign Up',
-                              style: TextStyle(fontSize: 17),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  get20height(),
+                  getMainButton(
+                      onPressed: () async {
+                        // Unfocus the text fields
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        if (_formKey.currentState?.validate() ?? false) {
+                          final name = _fullName.text.trim();
+                          final number = _mobileNumber.text.trim();
+                          final email = _email.text.trim();
+                          final password = _password.text.trim();
+
+                          user = UserModel(
+                              name: name, number: number, email: email);
+                          registerUser(password);
+                        }
+                      },
+                      name: "Sign Up"),
+                  get20height(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        style: TextStyle(color: Colors.grey, fontSize: 15),
-                        "Already have an account?",
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.popAndPushNamed(context, '/signin_screen');
-                        },
-                        child: const Text(
-                          "Sign In",
-                          style: TextStyle(color: Colors.orange, fontSize: 15),
-                        ),
-                      ),
+                      const Text("Already have an account?"),
+                      getLinkButton(
+                          onPressed: () {
+                            Navigator.popAndPushNamed(
+                                context, '/signin_screen');
+                          },
+                          name: "Sign In"),
                     ],
                   ),
                 ],
@@ -215,6 +180,76 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
     );
+  }
+
+  void registerUser(String password) async {
+    // Show loading dialog
+    showLoadingDialog(context);
+
+    try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: user.email!, password: password);
+
+      final cUser = FirebaseAuth.instance.currentUser!;
+
+      await cUser.sendEmailVerification();
+      print("Email verification send");
+      if (mounted) {
+        String title = "Check Your Email";
+        String msg =
+            "We have send email verifition instruction to your ${user.email}";
+        checkEmailDialog(context, title, msg);
+      }
+
+      emailTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+        await FirebaseAuth.instance.currentUser?.reload();
+        final cUser = FirebaseAuth.instance.currentUser;
+        if (cUser?.emailVerified ?? false) {
+          emailTimer!.cancel();
+          DatabaseReference ref = FirebaseDatabase.instance.ref("Users");
+          // Generate a unique shop ID
+          DatabaseReference userRef = ref.push();
+          await userRef.set(user.toJson());
+          // Show success dialog
+          if (mounted) {
+            dismissLoadingDialog(); // Dismiss the loading dialog
+          }
+          SharedPreferences preferences = await SharedPreferences.getInstance();
+
+          String userJson = jsonEncode(user.toJson());
+          await preferences.setString("user", userJson);
+          await preferences.setBool("isLogin", true);
+          if (!mounted) return;
+          Navigator.pushReplacementNamed(context, '/home_screen');
+        }
+      });
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Dismiss the loading dialog
+
+        switch (e.code) {
+          case "email-already-in-use":
+            showErrorDialog(
+                context, "Email already in use", "Try with a different email");
+            break;
+
+          case "invalid-email":
+            showErrorDialog(context, "Invalid Email", e.message!);
+            break;
+
+          default:
+            showErrorDialog(context, "Internal Error",
+                "An unexpected error occurred. Please try again later.");
+        }
+      }
+    } catch (e) {
+      print(e);
+      if (mounted) {
+        Navigator.of(context).pop(); // Dismiss the loading dialog
+        showErrorDialog(context, "Error",
+            "An unexpected error occurred. Please try again later.");
+      }
+    }
   }
 
   @override

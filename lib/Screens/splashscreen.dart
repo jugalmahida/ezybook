@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,22 +10,28 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  bool? _isLogin;
+  Future<void> getValueofPref() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _isLogin = prefs.getBool("isLogin") ?? false;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    // Navigate after 3 seconds
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user == null) {
-        print('User is currently signed out!');
-        Timer(const Duration(seconds: 3), () {
-          Navigator.pushReplacementNamed(context, '/home_screen');
-          // Navigator.pushReplacementNamed(context, '/signin_screen');
-        });
+    _checkNavigation();
+  }
+
+  Future<void> _checkNavigation() async {
+    await getValueofPref(); // Wait for the value to be fetched
+    Future.delayed(const Duration(seconds: 3), () {
+      if (_isLogin!) {
+        // Check if _shop is not null
+        Navigator.pushReplacementNamed(context, '/home_screen');
       } else {
-        print('User is signed in!');
-        Timer(const Duration(seconds: 3), () {
-          Navigator.pushReplacementNamed(context, '/home_screen');
-        });
+        Navigator.pushReplacementNamed(context, '/signin_screen');
       }
     });
   }

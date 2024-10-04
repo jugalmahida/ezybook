@@ -1,4 +1,14 @@
+import 'dart:convert';
+
+import 'package:ezybook/models/user.dart';
+import 'package:ezybook/widgets/button.dart';
+import 'package:ezybook/widgets/dialog.dart';
+import 'package:ezybook/widgets/sizedbox.dart';
+import 'package:ezybook/widgets/textfield.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({super.key});
@@ -39,27 +49,16 @@ class _SigninScreenState extends State<SigninScreen> {
                     'Sign in now',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
                   ),
-                  const SizedBox(
-                    height: 15,
-                  ),
+                  get15height(),
                   const Text(
                     "Please sign in to continue our app",
                     style: TextStyle(color: Colors.grey, fontSize: 15),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  TextFormField(
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    keyboardType: TextInputType.emailAddress,
+                  get20height(),
+                  getTextFiled(
+                    hintText: "Enter Email",
                     controller: _email,
-                    decoration: InputDecoration(
-                      hintText: "Enter Email",
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20.0),
-                      ),
-                    ),
+                    keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       value = value?.trim() ?? '';
                       if (value.isEmpty) {
@@ -71,9 +70,7 @@ class _SigninScreenState extends State<SigninScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  get20height(),
                   TextFormField(
                     autocorrect: false,
                     enableSuggestions: false,
@@ -110,55 +107,105 @@ class _SigninScreenState extends State<SigninScreen> {
                       return null;
                     },
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(
-                              context, '/forget_password_screen');
-                        },
-                        child: const Text(
-                          'Forget Password?',
-                          style: TextStyle(color: Colors.orange),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 45,
-                          child: FilledButton(
-                              style: FilledButton.styleFrom(
-                                backgroundColor: const Color(0xFF24BAEC),
-                              ),
-                              onPressed: () {
-                                if (_formKey.currentState?.validate() ??
-                                    false) {
-                                  final email = _email.text.trim();
-                                  final password = _password.text.trim();
-                                  // print(
-                                  //     "email - $email | password - $password");
-                                  Navigator.popAndPushNamed(
-                                      context, '/home_screen');
-                                }
-                              },
-                              child: const Text(
-                                'Sign In',
-                                style: TextStyle(fontSize: 17),
-                              )),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  getLinkButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/forget_password_screen');
+                      },
+                      name: "Forget Password?"),
+                  get10height(),
+                  getMainButton(
+                      onPressed: () async {
+                        // Unfocus the text fields
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        if (_formKey.currentState?.validate() ?? false) {
+                          showLoadingDialog(context);
+                          bool errorOccurred = false;
+
+                          final email = _email.text.trim();
+                          final password = _password.text.trim();
+                          try {
+                            await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
+                                    email: email, password: password);
+                            // Navigator.popAndPushNamed(context, '/home_screen');
+                            UserModel? user = await _getUserData(email);
+                            print(user);
+                            if (user != null) {
+                              SharedPreferences preferences =
+                                  await SharedPreferences.getInstance();
+                              String shopJson = jsonEncode(user.toJson());
+                              await preferences.setString("user", shopJson);
+                              await preferences.setBool("isLogin", true);
+                              if (!mounted) return;
+                              await Navigator.pushReplacementNamed(
+                                  context, '/home_screen');
+                            }
+                          } on FirebaseAuthException catch (e) {
+                            print(e);
+                            errorOccurred = true;
+
+                            if (mounted) {
+                              Navigator.of(context)
+                                  .pop(); // Dismiss the loading dialog
+
+                              switch (e.code) {
+                                case "wrong-password":
+                                  showErrorDialog(context, "Wrong Password",
+                                      "The password you provided is incorrect. Try resetting your password.");
+                                  break;
+                                case "invalid-email":
+                                  showErrorDialog(context, "Invalid Email",
+                                      "The email address you provided is invalid.");
+                                  break;
+                                case "user-disabled":
+                                  showErrorDialog(context, "Account Disabled",
+                                      "Your account has been disabled. Contact support for assistance.");
+                                  break;
+                                case "user-not-found":
+                                  showErrorDialog(context, "User Not Found",
+                                      "The email address you provided is not registered. Please sign up.");
+                                  break;
+                                case "network-request-failed":
+                                  showErrorDialog(
+                                      context,
+                                      "No Internet Connection",
+                                      "Please check your internet connection.");
+                                  break;
+                                case "invalid-credential":
+                                  showErrorDialog(context, "Invalid Credential",
+                                      "Invalid email or password.");
+                                  break;
+                                case "too-many-requests":
+                                  showErrorDialog(
+                                      context,
+                                      "Too many login attempts",
+                                      "You can try again later.");
+                                  break;
+                                default:
+                                  showErrorDialog(context, "Error",
+                                      "An unexpected error occurred from the database. Please try again later.");
+                              }
+                            }
+                          } catch (e) {
+                            print(e);
+                            errorOccurred = true;
+
+                            if (mounted) {
+                              Navigator.of(context)
+                                  .pop(); // Dismiss the loading dialog
+                              showErrorDialog(context, "Error",
+                                  "An unexpected error occurred. Please try again later.");
+                            }
+                          } finally {
+                            if (mounted && !errorOccurred) {
+                              Navigator.of(context)
+                                  .pop(); // Dismiss the loading dialog only if no error occurred
+                            }
+                          }
+                        }
+                      },
+                      name: "Sign In"),
+                  get20height(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -166,15 +213,10 @@ class _SigninScreenState extends State<SigninScreen> {
                         "Don't have an account?",
                         style: TextStyle(color: Colors.grey, fontSize: 15),
                       ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.popAndPushNamed(context, '/signup_screen');
-                        },
-                        child: const Text(
-                          "Sign Up",
-                          style: TextStyle(color: Colors.orange, fontSize: 15),
-                        ),
-                      ),
+                      getLinkButton(
+                          onPressed: () => Navigator.popAndPushNamed(
+                              context, '/signup_screen'),
+                          name: "Sign Up"),
                     ],
                   ),
                 ],
@@ -184,6 +226,33 @@ class _SigninScreenState extends State<SigninScreen> {
         ),
       ),
     );
+  }
+
+  Future<UserModel?> _getUserData(String email) async {
+    Query userRef = FirebaseDatabase.instance
+        .ref('Users')
+        .orderByChild("email")
+        .equalTo(email);
+    try {
+      final snapshot = await userRef.get();
+      if (snapshot.exists) {
+        final data = snapshot.value as Map<Object?, Object?>?;
+        if (data != null && data.isNotEmpty) {
+          // Get the first user's data
+          final userId = data.keys.first;
+          final userInfo = data[userId] as Map<Object?, Object?>;
+          final shop = UserModel.fromJson(userInfo.cast<String, dynamic>());
+          return shop; // Return the Shop instance
+        }
+      } else {
+        if (mounted) {
+          showErrorDialog(context, "Internal Error", "Contact the developer");
+        }
+      }
+    } catch (e) {
+      print('Error fetching user data: $e');
+    }
+    return null;
   }
 
   @override
