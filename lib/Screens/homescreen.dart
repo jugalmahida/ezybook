@@ -1,5 +1,11 @@
+import 'dart:convert';
+
 import 'package:ezybook/Screens/messagescreen.dart';
+import 'package:ezybook/models/shop.dart';
+import 'package:ezybook/models/user.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'category_section_screen.dart';
 
@@ -13,162 +19,60 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final PageController pageController = PageController(initialPage: 0);
   late int _selectedIndex = 0;
+  List<Shop> _shopList = []; // State variable to hold shops
+  UserModel? user;
 
-  List<Map<String, String>> allshopDetails = [
-    {
-      "category": "HairSalons",
-      "name": "Glamour Cuts",
-      "location": "Downtown, Cityville",
-      "mainimage": "assets/images/Im1.png",
-      "aboutshop":
-          "Specializing in contemporary styles and classic cuts. Our expert stylists are here to make you look and feel fabulous.Specializing in contemporary styles and classic cuts. Our expert stylists are here to make you look and feel fabulous.Specializing in contemporary styles and classic cuts. Our expert stylists are here to make you look and feel fabulous.Specializing in contemporary styles and classic cuts. Our expert stylists are here to make you look and feel fabulous.",
-      "price": "120"
-    },
-    {
-      "category": "HairSalons",
-      "name": "Style Haven",
-      "location": "Uptown, Cityville",
-      "mainimage": "assets/images/Im2.png",
-      "aboutshop":
-          "Your destination for a refreshing new look. Enjoy personalized consultations and premium hair treatments.",
-      "price": "180"
-    },
-    {
-      "category": "HairSalons",
-      "name": "Chic Cuts",
-      "location": "Westside, Cityville",
-      "mainimage": "assets/images/onboard1.png",
-      "aboutshop":
-          "Offering top-notch haircuts and coloring services. Come and experience our relaxing atmosphere and skilled professionals.",
-      "price": "100"
-    },
-    {
-      "category": "HairSalons",
-      "name": "Elegant Styles",
-      "location": "Eastside, Cityville",
-      "mainimage": "assets/images/onboard2.png",
-      "aboutshop":
-          "From trendy styles to classic cuts, we offer a wide range of hair services to meet your needs.",
-      "price": "150"
-    },
-    {
-      "category": "HairSalons",
-      "name": "Refined Looks",
-      "location": "Central, Cityville",
-      "mainimage": "assets/images/onboard3.png",
-      "aboutshop":
-          "Experience luxury with our high-end hair care and styling. Expert stylists and a comfortable environment await you.",
-      "price": "200"
-    },
-    {
-      "category": "HairSalons",
-      "name": "Best Hair's",
-      "location": "Uptown, Cityville",
-      "mainimage": "assets/images/Im2.png",
-      "aboutshop":
-          "Your destination for a refreshing new look. Enjoy personalized consultations and premium hair treatments.",
-      "price": "180"
-    },
-    {
-      "category": "Clinic",
-      "name": "Wellness Clinic",
-      "location": "Northside, Cityville",
-      "mainimage": "assets/images/Im3.png",
-      "aboutshop":
-          "Offering comprehensive healthcare services including general medicine, dermatology, and preventive care.",
-      "price": "Varies"
-    },
-    {
-      "category": "Clinic",
-      "name": "City Health Center",
-      "location": "Southside, Cityville",
-      "mainimage": "assets/images/Im4.png",
-      "aboutshop":
-          "Providing expert medical services with a focus on patient comfort and effective treatment plans.",
-      "price": "Varies"
-    },
-    {
-      "category": "Clinic",
-      "name": "Family Care Clinic",
-      "location": "Eastside, Cityville",
-      "mainimage": "assets/images/Im5.png",
-      "aboutshop":
-          "Dedicated to delivering compassionate care for all ages. Our team is here to support your family's health.",
-      "price": "Varies"
-    },
-    {
-      "category": "Clinic",
-      "name": "Healthy Horizons Clinic",
-      "location": "Westside, Cityville",
-      "mainimage": "assets/images/Im6.png",
-      "aboutshop":
-          "Expert medical services with a focus on wellness and preventive care. We strive to improve your quality of life.",
-      "price": "Varies"
-    },
-    {
-      "category": "Clinic",
-      "name": "Advanced Medical Center",
-      "location": "Central, Cityville",
-      "mainimage": "assets/images/Im7.png",
-      "aboutshop":
-          "Providing state-of-the-art healthcare and specialized medical services in a modern facility.",
-      "price": "Varies"
-    },
-    {
-      "category": "Clinic",
-      "name": "Best Clinic's",
-      "location": "Central, Cityville",
-      "mainimage": "assets/images/Im7.png",
-      "aboutshop":
-          "Providing state-of-the-art healthcare and specialized medical services in a modern facility.",
-      "price": "Varies"
-    },
-    {
-      "category": "Restaurant",
-      "name": "Gourmet Bistro",
-      "location": "Downtown, Cityville",
-      "mainimage": "assets/images/Im8.png",
-      "aboutshop":
-          "Enjoy a fine dining experience with a menu featuring local and international cuisine prepared by top chefs.",
-      "price": "50"
-    },
-    {
-      "category": "Restaurant",
-      "name": "The Dine Spot",
-      "location": "Uptown, Cityville",
-      "mainimage": "assets/images/Im9.png",
-      "aboutshop":
-          "A cozy place offering a variety of delicious dishes from around the world. Perfect for family dinners and special occasions.",
-      "price": "40"
-    },
-    {
-      "category": "Restaurant",
-      "name": "Urban Eats",
-      "location": "Westside, Cityville",
-      "mainimage": "assets/images/Im10.png",
-      "aboutshop":
-          "Experience a vibrant atmosphere with a diverse menu of contemporary dishes and fresh ingredients.",
-      "price": "30"
-    },
-    {
-      "category": "Restaurant",
-      "name": "Taste of Italy",
-      "location": "Eastside, Cityville",
-      "mainimage": "assets/images/Im11.png",
-      "aboutshop":
-          "Indulge in authentic Italian cuisine with a menu featuring pasta, pizza, and more, all made from scratch.",
-      "price": "35"
-    },
-    {
-      "category": "Restaurant",
-      "name": "Seafood Haven",
-      "location": "Central, Cityville",
-      "mainimage": "assets/images/Im12.png",
-      "aboutshop":
-          "A seafood lover's paradise offering the freshest catches and a variety of seafood dishes in a relaxed setting.",
-      "price": "60"
+  @override
+  void initState() {
+    super.initState();
+    pageController.addListener(() {
+      final newIndex = pageController.page?.round() ?? 0;
+      if (newIndex != _selectedIndex) {
+        setState(() {
+          _selectedIndex = newIndex;
+        });
+      }
+    });
+    _getShopData(); // Fetch shop data
+    getUserData(); // fetch user data
+  }
+
+  void getUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userJson = prefs.getString("user");
+
+    if (userJson != null) {
+      Map<String, dynamic> userMap = jsonDecode(userJson);
+      setState(() {
+        user = UserModel.fromJson(userMap);
+      });
     }
-  ];
+  }
+
+  void _getShopData() {
+    Query query = FirebaseDatabase.instance.ref("Shops");
+    query.onValue.listen((DatabaseEvent event) {
+      final snapshot = event.snapshot;
+      final data = snapshot.value as Map<Object?, Object?>?;
+
+      if (data != null && data.isNotEmpty) {
+        List<Shop> shopList = [];
+        data.forEach((key, value) {
+          if (value is Map<Object?, Object?>) {
+            Shop shop = Shop.fromJson(value.cast<String, dynamic>());
+            shopList.add(shop);
+            // print(shop.toJson());
+          }
+        });
+
+        setState(() {
+          _shopList = shopList; // Update the state with the fetched shops
+        });
+      }
+    }, onError: (error) {
+      print('Error occurred: $error');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -182,18 +86,21 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         backgroundColor: const Color(0xFFf7f7f9),
-        title: const Text("Hello, Raj"),
+        title: Text("Hello, ${user?.name}"),
         actions: [
           IconButton(
             onPressed: () {},
-            icon: Image.asset("assets/images/Notification.png"),
+            icon: const Icon(
+              Icons.notifications,
+              size: 24,
+            ),
           ),
         ],
       ),
       body: PageView(
         controller: pageController,
         children: [
-          Home(allshopDetails: allshopDetails), // Correctly pass the data
+          Home(allshopDetails: _shopList), // Correctly pass the data
           const MessageScreen(), // Ensure this is correctly defined
         ],
       ),
@@ -208,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.pushNamed(
             context,
             '/search_screen',
-            arguments: {'shopDetails': allshopDetails},
+            arguments: {'shopDetails': _shopList},
           );
         },
         child: const Icon(Icons.search),
@@ -228,15 +135,21 @@ class _HomeScreenState extends State<HomeScreen> {
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
-            label: '',
+            label: 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.message_outlined),
-            label: '',
+            label: 'Messages',
           ),
         ],
       ),
     );
+  }
+
+  void signOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool("isLogin", false);
+    prefs.setString("user", "");
   }
 
   void _showProfileMenu(BuildContext context) {
@@ -267,6 +180,8 @@ class _HomeScreenState extends State<HomeScreen> {
             leading: const Icon(Icons.exit_to_app),
             title: const Text('Sign Out'),
             onTap: () {
+              signOut();
+
               Navigator.pop(context); // Close the menu before navigating
               Navigator.pushNamedAndRemoveUntil(
                 context,
@@ -283,13 +198,13 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class Home extends StatelessWidget {
-  final List<Map<String, String>> allshopDetails;
+  final List<Shop?> allshopDetails;
 
   const Home({super.key, required this.allshopDetails});
 
   @override
   Widget build(BuildContext context) {
-    List<String> categories = ["HairSalons", "Clinic", "Restaurant"];
+    List<String> categories = ["HairSalon", "Restaurant"];
 
     return SingleChildScrollView(
       child: Container(
@@ -300,20 +215,33 @@ class Home extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  "Explore the\nbeautiful",
+                  "Explore the",
+                  style: TextStyle(fontSize: 35),
+                ),
+              ], //
+            ),
+            const Row(
+              children: [
+                Text(
+                  "beautiful",
                   style: TextStyle(fontSize: 35),
                 ),
                 Text(
-                  "Services",
+                  "  Services",
                   style: TextStyle(color: Colors.green, fontSize: 35),
                 ),
               ],
             ),
             const SizedBox(height: 10),
+            if (allshopDetails.isEmpty) // Handle empty state
+              const Text(
+                "Loading...",
+                style: TextStyle(fontSize: 18),
+              ),
             ...categories.map((category) => CategorySection(
                   category: category,
                   allshopDetails: allshopDetails
-                      .where((shop) => shop['category'] == category)
+                      .where((shop) => shop?.shopCategory == category)
                       .toList(),
                 )),
           ],

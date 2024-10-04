@@ -1,3 +1,6 @@
+import 'package:ezybook/models/shopservice.dart';
+import 'package:ezybook/widgets/button.dart';
+import 'package:ezybook/widgets/sizedbox.dart';
 import 'package:flutter/material.dart';
 
 class ShopDetails extends StatefulWidget {
@@ -8,8 +11,9 @@ class ShopDetails extends StatefulWidget {
 }
 
 class _ShopDetailsState extends State<ShopDetails> {
-  bool isExpanded = false; // State to track if text is expanded
-  bool isOverflowing = false; // State to track if the text is overflowing
+  bool isExpanded = false;
+  bool isOverflowing = false;
+  List<ShopService> selectedServices = [];
 
   @override
   void initState() {
@@ -20,7 +24,6 @@ class _ShopDetailsState extends State<ShopDetails> {
   void checkTextOverflow() {
     final arguments =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-
     final String aboutShop = arguments?['aboutshop'] ?? 'Not available';
 
     final TextSpan textSpan = TextSpan(
@@ -34,9 +37,7 @@ class _ShopDetailsState extends State<ShopDetails> {
       textDirection: TextDirection.ltr,
     );
 
-    textPainter.layout(
-        maxWidth: MediaQuery.of(context).size.width -
-            40); // Adjust width based on your layout
+    textPainter.layout(maxWidth: MediaQuery.of(context).size.width - 40);
 
     if (textPainter.didExceedMaxLines) {
       setState(() {
@@ -47,138 +48,223 @@ class _ShopDetailsState extends State<ShopDetails> {
 
   @override
   Widget build(BuildContext context) {
-    // Retrieve the arguments
     final arguments =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     double screenWidth = MediaQuery.of(context).size.width;
-    double screenheight = MediaQuery.sizeOf(context).height * 0.55;
+    double screenHeight = MediaQuery.sizeOf(context).height * 0.45;
 
-    // Use default values or handle missing arguments
     final String name = arguments?['name'] ?? 'Unknown Shop';
-    final String charge = arguments?['charge'] ?? 'Unknown Charge';
     final String location = arguments?['location'] ?? 'Unknown Location';
     final String mainImage = arguments?['image'] ?? 'assets/images/Im1.png';
-    final String aboutShop =
-        arguments?['aboutshop'] ?? 'Not available'; // Corrected key
+    final String aboutShop = arguments?['aboutshop'] ?? 'Not available';
+    final String startTime = arguments?['openingTime'] ?? "";
+    final String endTime = arguments?['endTime'] ?? "";
+    final String mStartTime = arguments?['mStartTime'] ?? "";
+    final String mEndTime = arguments?['mEndTime'] ?? "";
+    final String eStartTime = arguments?['eStartTime'] ?? "";
+    final String eEndTime = arguments?['eEndTime'] ?? "";
+
+    final List<ShopService>? shopServices = arguments?['shopServices'] ?? [];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Shop Details"),
-        centerTitle: true,
-      ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Main image
-          Image.asset(
-            mainImage,
-            width: screenWidth,
-            height: screenheight,
-            fit: BoxFit.fill,
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Shop name
-                    Text(
-                      name,
-                      style: const TextStyle(fontSize: 25),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              alignment: Alignment.bottomCenter,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                  child: Container(
+                    width: screenWidth,
+                    height: screenHeight,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkImage(mainImage),
+                        fit: BoxFit.cover,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          offset: const Offset(0, 5),
+                          blurRadius: 10,
+                        ),
+                      ],
                     ),
-                    // Shop location
-                    Row(
-                      children: [
-                        Row(
-                          children: [
-                            Image.asset("assets/images/location.png"),
-                            const SizedBox(width: 5),
-                            Text(
+                  ),
+                ),
+                // Shop name
+                Container(
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.black.withOpacity(0.7),
+                        Colors.transparent,
+                      ],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                                fontSize: 24, color: Colors.white),
+                          ),
+                          const SizedBox(width: 10),
+                          startTime.isNotEmpty
+                              ? Text(
+                                  "$startTime - $endTime",
+                                  style: const TextStyle(
+                                      fontSize: 16, color: Colors.white),
+                                )
+                              : Text(
+                                  "$mStartTime - $mEndTime | $eStartTime - $eEndTime",
+                                  style: const TextStyle(
+                                      fontSize: 16, color: Colors.white),
+                                ),
+                        ],
+                      ),
+                      get10height(),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on,
+                            color: Colors.white,
+                          ),
+                          get10height(),
+                          Expanded(
+                            child: Text(
                               location,
                               style: const TextStyle(
-                                  fontSize: 17, color: Colors.grey),
+                                  fontSize: 17, color: Colors.white),
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Fees per client - $charge",
-                      style: const TextStyle(fontSize: 18, color: Colors.blue),
-                    ),
-                    // Other details
-                    const SizedBox(height: 10),
-                    // About section
-                    const Text(
-                      "About Shop",
-                      style: TextStyle(fontSize: 25),
-                    ),
-                    const SizedBox(height: 10),
-                    // AboutShop Text with "Read more" / "Read less" functionality
-                    Text(
-                      aboutShop,
-                      maxLines: isExpanded ? null : 4,
-                      overflow: isExpanded
-                          ? TextOverflow.visible
-                          : TextOverflow.ellipsis,
-                      style: const TextStyle(color: Colors.grey, fontSize: 18),
-                    ),
-                    if (isOverflowing)
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            isExpanded = !isExpanded; // Toggle expanded state
-                          });
-                        },
-                        child: Text(
-                          isExpanded ? 'Read less' : 'Read more',
-                          style: const TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 17,
                           ),
-                        ),
+                        ],
                       ),
-                    const SizedBox(height: 20),
-                    // View Time Table button
-                    Row(
-                      children: [
-                        Expanded(
-                          child: SizedBox(
-                            height: 45,
-                            child: FilledButton(
-                              style: FilledButton.styleFrom(
-                                  backgroundColor: const Color(0xFF24BAEC)),
-                              onPressed: () => {
-                                Navigator.pushNamed(
-                                  context,
-                                  "/time_table_screen",
-                                  arguments: {
-                                    'name': name,
-                                    'charge': charge,
-                                    'location': location,
-                                    'image': mainImage,
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(14.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "About Us",
+                        style: TextStyle(fontSize: 25),
+                      ),
+                      get10height(),
+                      Text(
+                        aboutShop,
+                        maxLines: isExpanded ? null : 4,
+                        overflow: isExpanded
+                            ? TextOverflow.visible
+                            : TextOverflow.ellipsis,
+                        style:
+                            const TextStyle(color: Colors.grey, fontSize: 18),
+                      ),
+                      get10height(),
+                      if (shopServices?.isNotEmpty ?? false)
+                        const Text(
+                          "Services",
+                          style: TextStyle(fontSize: 25),
+                        ),
+                      get10height(),
+                      if (shopServices?.isNotEmpty ?? false)
+                        SizedBox(
+                          height: 150,
+                          child: ListView.builder(
+                            itemBuilder: (BuildContext context, int index) {
+                              final service = shopServices?[index];
+                              return ListTile(
+                                leading: Checkbox(
+                                  value: selectedServices.contains(service),
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      if (value == true) {
+                                        selectedServices.add(service!);
+                                      } else {
+                                        selectedServices.remove(service);
+                                      }
+                                    });
                                   },
-                                )
-                              },
-                              child: const Text(
-                                'View Time Table',
-                                style: TextStyle(fontSize: 17),
-                              ),
+                                ),
+                                title: Text(
+                                  "${service?.serviceName}",
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text(
+                                  "Approx time - ${service?.serviceDuration} ${service?.minOrHr}",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                                trailing: Text(
+                                  "₹${service?.serviceCharge}",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              );
+                            },
+                            itemCount: shopServices?.length,
+                          ),
+                        ),
+                      get10height(),
+                      if (isOverflowing)
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              isExpanded = !isExpanded;
+                            });
+                          },
+                          child: Text(
+                            isExpanded ? 'Read less' : 'Read more',
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                      get10height(),
+                      getMainButton(
+                        onPressed: () {
+                          Navigator.pushNamed(
+                            context,
+                            "/time_table_screen",
+                            arguments: {
+                              'name': name,
+                              'location': location,
+                              'image': mainImage,
+                            },
+                          );
+                        },
+                        name: "Sent Request",
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

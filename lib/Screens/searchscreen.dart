@@ -1,3 +1,4 @@
+import 'package:ezybook/models/shop.dart';
 import 'package:flutter/material.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -9,8 +10,8 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   late final TextEditingController _searchQuery;
-  late List<Map<String, String>> _filteredShops;
-  late List<Map<String, String>> _allShops;
+  late List<Shop?> _filteredShops;
+  late List<Shop?> _allShops;
   String _selectedCategory = 'All'; // Variable to track the selected category
 
   @override
@@ -44,19 +45,15 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
-  List<Map<String, String>> _getFilteredShops() {
+  List<Shop?> _getFilteredShops() {
     final searchText = _searchQuery.text.toLowerCase();
 
     return _allShops.where((shop) {
-      final nameMatches = shop['name']!.toLowerCase().contains(searchText);
-      final locationMatches =
-          shop['location']!.toLowerCase().contains(searchText);
-      final priceMatches = shop['price']!.toLowerCase().contains(searchText);
+      final nameMatches = shop?.shopName?.toLowerCase().contains(searchText);
       final categoryMatches =
-          _selectedCategory == 'All' || shop['category'] == _selectedCategory;
+          _selectedCategory == 'All' || shop?.shopCategory == _selectedCategory;
 
-      return (nameMatches || locationMatches || priceMatches) &&
-          categoryMatches;
+      return (nameMatches ?? false) && categoryMatches;
     }).toList();
   }
 
@@ -100,8 +97,7 @@ class _SearchScreenState extends State<SearchScreen> {
               spacing: 10, // Space between chips horizontally
               children: [
                 _buildChips(category: "All"),
-                _buildChips(category: "HairSalons"),
-                _buildChips(category: "Clinic"),
+                _buildChips(category: "HairSalon"),
                 _buildChips(category: "Restaurant"),
               ],
             ),
@@ -124,11 +120,10 @@ class _SearchScreenState extends State<SearchScreen> {
                               context,
                               "/shop_details_screen",
                               arguments: {
-                                'name': shop['name'],
-                                'charge': "₹${shop['price']}",
-                                'location': shop['location'],
-                                'image': shop['mainimage'],
-                                'aboutshop': shop['aboutshop'],
+                                'name': shop?.shopName,
+                                'location': shop?.shopAddress,
+                                'image': shop?.shopImageUrl,
+                                'aboutshop': shop?.shopAbout,
                               },
                             );
                           },
@@ -143,8 +138,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(15),
-                                    child: Image.asset(
-                                      shop['mainimage']!,
+                                    child: Image.network(
+                                      shop?.shopImageUrl ?? "",
                                       width: 100,
                                       height: 120,
                                       fit: BoxFit.cover,
@@ -160,28 +155,10 @@ class _SearchScreenState extends State<SearchScreen> {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                shop['name']!,
+                                                shop?.shopName ?? "",
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   fontSize: 18,
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      vertical: 4,
-                                                      horizontal: 8),
-                                              decoration: BoxDecoration(
-                                                color: Colors.orange,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                              ),
-                                              child: Text(
-                                                "₹${shop['price']}",
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
                                             ),
@@ -189,7 +166,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          shop['location']!,
+                                          shop?.shopAddress ?? "",
                                           style: TextStyle(
                                               color: Colors.grey[600],
                                               fontSize: 16),

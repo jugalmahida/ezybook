@@ -1,8 +1,10 @@
+import 'package:ezybook/models/shop.dart';
 import 'package:flutter/material.dart';
+import 'package:skeleton_text/skeleton_text.dart';
 
 class CategorySection extends StatefulWidget {
   final String category;
-  final List<Map<String, String>> allshopDetails;
+  final List<Shop?> allshopDetails;
 
   const CategorySection({
     super.key,
@@ -11,19 +13,16 @@ class CategorySection extends StatefulWidget {
   });
 
   @override
-  // ignore: library_private_types_in_public_api
   _CategorySectionState createState() => _CategorySectionState();
 }
 
 class _CategorySectionState extends State<CategorySection> {
-  // Initialize a map to track favorite status of each shop
   @override
   Widget build(BuildContext context) {
     double imageSize = MediaQuery.of(context).size.height * 0.26;
     double rowSize = MediaQuery.of(context).size.height * 0.38;
 
-    List<Map<String, String>> topFiveShops =
-        widget.allshopDetails.take(5).toList();
+    List<Shop?> topFiveShops = widget.allshopDetails.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,11 +48,17 @@ class _CategorySectionState extends State<CategorySection> {
                     context,
                     "/shop_details_screen",
                     arguments: {
-                      'name': shop['name'],
-                      'charge': "₹${shop['price']}",
-                      'location': shop['location'],
-                      'image': shop['mainimage'],
-                      'aboutshop': shop['aboutshop'],
+                      'name': shop?.shopName,
+                      'location': shop?.shopAddress,
+                      'image': shop?.shopImageUrl,
+                      'aboutshop': shop?.shopAbout,
+                      'openingTime': shop?.startTime,
+                      'endTime': shop?.endTime,
+                      'mStartTime': shop?.mStartTime,
+                      'mEndTime': shop?.mEndTime,
+                      'eStartTime': shop?.eStartTime,
+                      'eEndTime': shop?.eEndTime,
+                      'shopServices': shop?.shopServices,
                     },
                   );
                 },
@@ -63,32 +68,41 @@ class _CategorySectionState extends State<CategorySection> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.asset(
-                        width: imageSize,
-                        height: imageSize,
-                        shop['mainimage']!,
-                        fit: BoxFit.fill,
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.network(
+                          shop?.shopImageUrl ?? "",
+                          width: imageSize,
+                          height: imageSize,
+                          fit: BoxFit.cover,
+                          loadingBuilder: (BuildContext context, Widget child,
+                              ImageChunkEvent? loadingProgress) {
+                            if (loadingProgress == null) {
+                              return child; // The image has loaded
+                            } else {
+                              // Show the skeleton while loading
+                              return SkeletonAnimation(
+                                child: Container(
+                                  width: imageSize,
+                                  height: imageSize,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                        ),
                       ),
                       const SizedBox(height: 10),
                       Row(
                         children: [
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 5),
                           Text(
-                            shop['name']!,
+                            shop?.shopName ?? "",
                             style: const TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 5),
-                      Row(
-                        children: [
-                          const SizedBox(width: 20),
-                          Image.asset("assets/images/location.png"),
-                          const SizedBox(width: 10),
-                          Text(
-                            shop['location']!,
-                            style: const TextStyle(color: Colors.grey),
                           ),
                         ],
                       ),
