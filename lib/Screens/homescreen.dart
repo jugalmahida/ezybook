@@ -238,12 +238,14 @@ class Home extends StatelessWidget {
                 "Loading...",
                 style: TextStyle(fontSize: 18),
               ),
-            ...categories.map((category) => CategorySection(
-                  category: category,
-                  allshopDetails: allshopDetails
-                      .where((shop) => shop?.shopCategory == category)
-                      .toList(),
-                )),
+            ...categories.map(
+              (category) => CategorySection(
+                category: category,
+                allshopDetails: allshopDetails
+                    .where((shop) => shop?.shopCategory == category)
+                    .toList(),
+              ),
+            ),
           ],
         ),
       ),

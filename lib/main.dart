@@ -2,6 +2,7 @@ import 'package:ezybook/Screens/UserProfile.dart';
 import 'package:ezybook/Screens/editprofile.dart';
 import 'package:ezybook/Screens/searchscreen.dart';
 import 'package:ezybook/Screens/shopdetails.dart';
+import 'package:ezybook/Screens/summaryscreen.dart';
 import 'package:ezybook/Screens/timetablescreen.dart';
 import 'package:flutter/material.dart';
 
@@ -50,6 +51,7 @@ class MyApp extends StatelessWidget {
         '/time_table_screen': (context) => const TimeTable(),
         '/user_profile_screen': (context) => const UserProfile(),
         '/edit_profile_screen': (context) => const EditProfile(),
+        '/summary_screen_screen': (context) => const SummaryScreen(),
       },
     );
   }
