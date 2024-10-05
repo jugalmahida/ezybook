@@ -190,7 +190,7 @@ class _ShopDetailsState extends State<ShopDetails> {
                       get10height(),
                       if (shopServices?.isNotEmpty ?? false)
                         SizedBox(
-                          height: 150,
+                          height: 200,
                           child: ListView.builder(
                             itemBuilder: (BuildContext context, int index) {
                               final service = shopServices?[index];
@@ -243,18 +243,26 @@ class _ShopDetailsState extends State<ShopDetails> {
                             ),
                           ),
                         ),
-                      get10height(),
                       getMainButton(
                         onPressed: () {
-                          Navigator.pushNamed(
-                            context,
-                            "/time_table_screen",
-                            arguments: {
-                              'name': name,
-                              'location': location,
-                              'image': mainImage,
-                            },
-                          );
+                          if (selectedServices.isNotEmpty) {
+                            Navigator.pushNamed(
+                              context,
+                              "/summary_screen_screen",
+                              arguments: {
+                                "name": name,
+                                "selectedServices": selectedServices,
+                                "location": location
+                              },
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text("Please select at least a service"),
+                              ),
+                            );
+                          }
                         },
                         name: "Sent Request",
                       ),
