@@ -48,6 +48,7 @@ class _CategorySectionState extends State<CategorySection> {
                     context,
                     "/shop_details_screen",
                     arguments: {
+                      'shopId': shop?.shopId,
                       'name': shop?.shopName,
                       'location': shop?.shopAddress,
                       'image': shop?.shopImageUrl,
@@ -58,6 +59,7 @@ class _CategorySectionState extends State<CategorySection> {
                       'mEndTime': shop?.mEndTime,
                       'eStartTime': shop?.eStartTime,
                       'eEndTime': shop?.eEndTime,
+                      'mapLink': shop?.mapLink,
                       'shopServices': shop?.shopServices,
                     },
                   );

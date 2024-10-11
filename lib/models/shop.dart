@@ -1,6 +1,7 @@
 import 'package:ezybook/models/shopservice.dart';
 
 class Shop {
+  String? shopId;
   String? shopImageUrl;
   String? shopCategory;
   String? shopName;
@@ -18,9 +19,12 @@ class Shop {
   String? eStartTime;
   String? eEndTime;
   String? seatOrTable;
+  String? mapLink;
+
   List<ShopService>? shopServices;
 
   Shop({
+    this.shopId,
     this.shopImageUrl,
     this.shopCategory,
     this.shopName,
@@ -38,21 +42,21 @@ class Shop {
     this.eStartTime,
     this.eEndTime,
     this.seatOrTable,
+    this.mapLink,
     this.shopServices,
   });
-  factory Shop.fromJson(Map<String, dynamic> json) {
+  factory Shop.fromJson(Map<String, dynamic> json, String shopId) {
     // Get the list of shop services, or null if not present
     List<dynamic>? s = json['shopServices'];
 
     // If 'shopServices' is not null, map it to a list of ShopService
-    List<ShopService>? sl = s != null
-        ? s
-            .map((element) =>
-                ShopService.fromJson(element.cast<String, dynamic>()))
-            .toList()
-        : null;
+    List<ShopService>? sl = s
+        ?.map(
+            (element) => ShopService.fromJson(element.cast<String, dynamic>()))
+        .toList();
 
     return Shop(
+      shopId: shopId,
       shopImageUrl: json['shopImageUrl'],
       shopCategory: json['shopCategory'],
       shopName: json['shopName'],
@@ -70,12 +74,14 @@ class Shop {
       eStartTime: json['eStartTime'],
       eEndTime: json['eEndTime'],
       seatOrTable: json['seatOrTable'],
+      mapLink: json['mapLink'],
       shopServices: sl,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'shopId': shopId,
       'shopImageUrl': shopImageUrl,
       'shopCategory': shopCategory,
       'shopName': shopName,
@@ -93,7 +99,8 @@ class Shop {
       'eStartTime': eStartTime,
       'eEndTime': eEndTime,
       'seatOrTable': seatOrTable,
-      'shopServices': shopServices,
+      'mapLink': mapLink,
+      'shopServices': shopServices?.map((service) => service.toJson()).toList(),
     };
   }
 

@@ -207,7 +207,7 @@ class _SignupScreenState extends State<SignupScreen> {
         if (cUser?.emailVerified ?? false) {
           emailTimer!.cancel();
           DatabaseReference ref = FirebaseDatabase.instance.ref("Users");
-          // Generate a unique shop ID
+          // Generate a unique user ID
           DatabaseReference userRef = ref.push();
           await userRef.set(user.toJson());
           // Show success dialog
@@ -215,7 +215,10 @@ class _SignupScreenState extends State<SignupScreen> {
             dismissLoadingDialog(); // Dismiss the loading dialog
           }
           SharedPreferences preferences = await SharedPreferences.getInstance();
-
+          setState(() {
+            // print(userRef.key.toString());
+            user.uId = userRef.key.toString();
+          });
           String userJson = jsonEncode(user.toJson());
           await preferences.setString("user", userJson);
           await preferences.setBool("isLogin", true);

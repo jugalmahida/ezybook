@@ -3,6 +3,7 @@ import 'package:ezybook/models/shopservice.dart';
 class Booking {
   String userId;
   String shopId;
+  String date;
   List<ShopService> serviceList;
   String totalFee;
   String customerName;
@@ -11,6 +12,7 @@ class Booking {
   Booking({
     required this.userId,
     required this.shopId,
+    required this.date,
     required this.serviceList,
     required this.totalFee,
     required this.customerName,
@@ -25,7 +27,8 @@ class Booking {
         customerName = json['customerName'] as String,
         status = json['status'] as String,
         userId = json['userId'] as String,
-        shopId = json['shopId'] as String;
+        shopId = json['shopId'] as String,
+        date = json['date'] as String;
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
@@ -36,6 +39,7 @@ class Booking {
     data['status'] = status;
     data['userId'] = userId;
     data['shopId'] = shopId;
+    data['date'] = date;
     return data;
   }
 }

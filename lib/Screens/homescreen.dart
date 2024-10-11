@@ -59,7 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
         List<Shop> shopList = [];
         data.forEach((key, value) {
           if (value is Map<Object?, Object?>) {
-            Shop shop = Shop.fromJson(value.cast<String, dynamic>());
+            Shop shop =
+                Shop.fromJson(value.cast<String, dynamic>(), key.toString());
             shopList.add(shop);
             // print(shop.toJson());
           }
@@ -204,7 +205,7 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<String> categories = ["HairSalon", "Restaurant"];
+    List<String> categories = ["Salon", "Restaurant"];
 
     return SingleChildScrollView(
       child: Container(
