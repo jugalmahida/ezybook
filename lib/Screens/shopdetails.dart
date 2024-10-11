@@ -41,7 +41,7 @@ class _ShopDetailsState extends State<ShopDetails> {
 
     final TextPainter textPainter = TextPainter(
       text: textSpan,
-      maxLines: 4,
+      maxLines: 2,
       textDirection: TextDirection.ltr,
     );
 
@@ -83,17 +83,21 @@ class _ShopDetailsState extends State<ShopDetails> {
         user = UserModel.fromJson(userMap);
       });
     }
-    Booking booking = Booking(
-        userId: user!.uId!,
-        shopId: sId!,
-        date: finalDate,
-        serviceList: selectedServices,
-        totalFee: tAmount.toString(),
-        customerName: user!.name!,
-        status: status);
+
     DatabaseReference ref = FirebaseDatabase.instance.ref("Booking");
     DatabaseReference bookingRef = ref.push();
-    print("Booking - ${booking.toJson()}");
+    Booking booking = Booking(
+      bookingId: bookingRef.key.toString(),
+      numberOfSeatorTable: 0,
+      userId: user!.uId!,
+      shopId: sId!,
+      date: finalDate,
+      serviceList: selectedServices,
+      totalFee: tAmount.toString(),
+      customerName: user!.name!,
+      status: status,
+    );
+    // print("Booking - ${booking.toJson()}");
     try {
       await bookingRef.set(booking.toJson());
       if (mounted) {
@@ -101,7 +105,7 @@ class _ShopDetailsState extends State<ShopDetails> {
         success = true;
       }
     } catch (e) {
-      print(e);
+      // print(e);
       dismissLoadingDialog();
       success = false;
     }
@@ -268,7 +272,7 @@ class _ShopDetailsState extends State<ShopDetails> {
                       get10height(),
                       Text(
                         aboutShop,
-                        maxLines: isExpanded ? null : 4,
+                        maxLines: isExpanded ? null : 2,
                         overflow: isExpanded
                             ? TextOverflow.visible
                             : TextOverflow.ellipsis,

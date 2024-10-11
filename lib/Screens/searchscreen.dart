@@ -49,11 +49,14 @@ class _SearchScreenState extends State<SearchScreen> {
     final searchText = _searchQuery.text.toLowerCase();
 
     return _allShops.where((shop) {
-      final nameMatches = shop?.shopName?.toLowerCase().contains(searchText);
+      final nameMatches =
+          shop?.shopName?.toLowerCase().contains(searchText) ?? false;
+      final locationMatches =
+          shop?.shopAddress?.toLowerCase().contains(searchText) ?? false;
       final categoryMatches =
           _selectedCategory == 'All' || shop?.shopCategory == _selectedCategory;
 
-      return (nameMatches ?? false) && categoryMatches;
+      return (nameMatches || locationMatches) && categoryMatches;
     }).toList();
   }
 
@@ -75,7 +78,7 @@ class _SearchScreenState extends State<SearchScreen> {
               decoration: InputDecoration(
                 filled: true,
                 fillColor: const Color.fromARGB(255, 242, 242, 247),
-                hintText: "Search shops by name, location, or price",
+                hintText: "Search shops by name, area",
                 border: OutlineInputBorder(
                   borderSide: BorderSide.none,
                   borderRadius: BorderRadius.circular(20.0),
@@ -97,7 +100,7 @@ class _SearchScreenState extends State<SearchScreen> {
               spacing: 10, // Space between chips horizontally
               children: [
                 _buildChips(category: "All"),
-                _buildChips(category: "HairSalon"),
+                _buildChips(category: "Salon"),
                 _buildChips(category: "Restaurant"),
               ],
             ),
@@ -120,10 +123,19 @@ class _SearchScreenState extends State<SearchScreen> {
                               context,
                               "/shop_details_screen",
                               arguments: {
+                                'shopId': shop?.shopId,
                                 'name': shop?.shopName,
                                 'location': shop?.shopAddress,
                                 'image': shop?.shopImageUrl,
                                 'aboutshop': shop?.shopAbout,
+                                'openingTime': shop?.startTime,
+                                'endTime': shop?.endTime,
+                                'mStartTime': shop?.mStartTime,
+                                'mEndTime': shop?.mEndTime,
+                                'eStartTime': shop?.eStartTime,
+                                'eEndTime': shop?.eEndTime,
+                                'mapLink': shop?.mapLink,
+                                'shopServices': shop?.shopServices,
                               },
                             );
                           },
