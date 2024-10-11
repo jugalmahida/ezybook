@@ -129,7 +129,6 @@ class _SigninScreenState extends State<SigninScreen> {
                                     email: email, password: password);
                             // Navigator.popAndPushNamed(context, '/home_screen');
                             UserModel? user = await _getUserData(email);
-                            print(user);
                             if (user != null) {
                               SharedPreferences preferences =
                                   await SharedPreferences.getInstance();
@@ -233,16 +232,23 @@ class _SigninScreenState extends State<SigninScreen> {
         .ref('Users')
         .orderByChild("email")
         .equalTo(email);
+
     try {
       final snapshot = await userRef.get();
       if (snapshot.exists) {
         final data = snapshot.value as Map<Object?, Object?>?;
         if (data != null && data.isNotEmpty) {
           // Get the first user's data
-          final userId = data.keys.first;
+          final userId = data.keys.first; // Store the userId
           final userInfo = data[userId] as Map<Object?, Object?>;
-          final shop = UserModel.fromJson(userInfo.cast<String, dynamic>());
-          return shop; // Return the Shop instance
+
+          // Create the UserModel instance with userId
+          final user = UserModel(
+            uId: userId.toString(), // Cast userId to String
+            email: userInfo['email'] as String,
+            name: userInfo['name'] as String,
+          );
+          return user; // Return the User instance
         }
       } else {
         if (mounted) {
