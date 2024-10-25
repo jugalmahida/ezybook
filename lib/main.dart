@@ -1,5 +1,6 @@
 import 'package:ezybook/Screens/UserProfile.dart';
 import 'package:ezybook/Screens/editprofile.dart';
+import 'package:ezybook/Screens/requestsscreen.dart';
 import 'package:ezybook/Screens/searchscreen.dart';
 import 'package:ezybook/Screens/shopdetails.dart';
 import 'package:ezybook/Screens/summaryscreen.dart';
@@ -52,6 +53,7 @@ class MyApp extends StatelessWidget {
         '/user_profile_screen': (context) => const UserProfile(),
         '/edit_profile_screen': (context) => const EditProfile(),
         '/summary_screen_screen': (context) => const SummaryScreen(),
+        '/requests_screen_screen': (context) => const RequestsScreen(),
       },
     );
   }

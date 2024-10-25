@@ -1,49 +1,68 @@
-import 'package:ezybook/models/shopservice.dart';
+import 'package:ezybook/models/booking.dart';
 import 'package:ezybook/widgets/sizedbox.dart';
 import 'package:flutter/material.dart';
 
 class SummaryScreen extends StatefulWidget {
   const SummaryScreen({super.key});
+  static Booking? booking;
 
   @override
   State<SummaryScreen> createState() => _SummaryScreenState();
 }
 
 class _SummaryScreenState extends State<SummaryScreen> {
+  String isSeatorTable = "";
+
   @override
   void initState() {
     super.initState();
+    if (SummaryScreen.booking!.shopCategory == "Salon") {
+      isSeatorTable = "Seat";
+    } else {
+      isSeatorTable = "Table";
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final arguments =
-        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-
-    final String name = arguments?['name'] ?? 'Unknown Shop';
-    final String status = arguments?['status'] ?? 'Unknown Status';
-    final double totalAmount = arguments?['totalAmount'] ?? 0.0;
-    final String location = arguments?['location'] ?? 'Unknown Location';
-    final String date = arguments?['date'] ?? 'Unknown Date';
-    final List<ShopService> shopServices = arguments?['selectedServices'] ?? [];
-
-    // Calculate total amount
-
     return Scaffold(
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              Image.asset(
-                'assets/images/bookingdone.gif',
-                fit: BoxFit.cover,
-              ),
-              get10height(),
-              const Text(
-                "Request Send to Owner",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              SummaryScreen.booking?.status == "Accepted"
+                  ? Column(
+                      children: [
+                        Image.asset(
+                          'assets/images/bookingdone.gif',
+                          fit: BoxFit.cover,
+                        ),
+                        get10height(),
+                        const Text(
+                          "Congratulations !!!",
+                          style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      ],
+                    )
+                  : const SizedBox(),
+
+              SummaryScreen.booking?.status == "Pending"
+                  ? Column(
+                      children: [
+                        get10height(),
+                        const Text(
+                          "Request Send to Owner",
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    )
+                  : const SizedBox(),
+
               get10height(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -53,7 +72,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                     width: 10,
                   ),
                   Text(
-                    name,
+                    "${SummaryScreen.booking?.shopName}",
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -68,7 +87,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                     width: 10,
                   ),
                   Text(
-                    date,
+                    SummaryScreen.booking?.date ?? "N/A",
                     style: const TextStyle(
                         fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -82,56 +101,87 @@ class _SummaryScreenState extends State<SummaryScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      location,
+                      "${SummaryScreen.booking?.shopAddress}",
                       style: const TextStyle(
                           fontWeight: FontWeight.bold, fontSize: 16),
                     ),
                   ),
                 ],
               ),
-              get10height(),
               // Displaying shop services
-              const Text(
-                "Selected Services",
-                style: TextStyle(
-                  fontSize: 18,
-                ),
-              ),
-              get10height(),
-              ListView(
-                shrinkWrap: true,
-                children: shopServices.map((shopService) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              SummaryScreen.booking?.shopCategory == "Salon"
+                  ? Column(
                       children: [
-                        Text(
-                          shopService.serviceName ?? 'No Name',
-                          style: const TextStyle(fontSize: 16),
+                        get10height(),
+                        const Text(
+                          "Selected Services",
+                          style: TextStyle(
+                            fontSize: 18,
+                          ),
                         ),
-                        Text(
-                          shopService.serviceCharge ?? 'No Charge',
-                          style: const TextStyle(fontSize: 16),
+                        get10height(),
+                        ListView(
+                          shrinkWrap: true,
+                          children: SummaryScreen.booking!.serviceList!
+                              .map((shopService) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    shopService.serviceName ?? 'No Name',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                  Text(
+                                    shopService.serviceCharge ?? 'No Charge',
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }).toList(),
                         ),
                       ],
-                    ),
-                  );
-                }).toList(),
-              ),
+                    )
+                  : const SizedBox(),
               get10height(),
               Text(
-                "Status - $status",
+                "Status - ${SummaryScreen.booking?.status}",
                 style:
                     const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              // Displaying the total amount
-              get10height(),
-              Text(
-                "Total Amount: ₹$totalAmount",
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+
+              SummaryScreen.booking?.status == "Accepted"
+                  ? Column(
+                      children: [
+                        get10height(),
+                        Text(
+                          "Your $isSeatorTable Number - ${SummaryScreen.booking?.numberOfSeatorTable}",
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        )
+                      ],
+                    )
+                  : const SizedBox(),
+
+              SummaryScreen.booking?.shopCategory == "Salon"
+                  ? Column(
+                      children: [
+                        // Displaying the total amount
+                        get10height(),
+                        Text(
+                          "Total Amount: ₹${SummaryScreen.booking!.totalFee ?? "N/A"}",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      ],
+                    )
+                  : const SizedBox(),
               get10height(),
               ElevatedButton.icon(
                 label: const Text(
