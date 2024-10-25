@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:ezybook/Screens/summaryscreen.dart';
 import 'package:ezybook/models/booking.dart';
+import 'package:ezybook/models/shop.dart';
 import 'package:ezybook/models/shopservice.dart';
 import 'package:ezybook/models/user.dart';
 import 'package:ezybook/widgets/button.dart';
@@ -32,8 +34,8 @@ class _ShopDetailsState extends State<ShopDetails> {
   void checkTextOverflow() {
     final arguments =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    final String aboutShop = arguments?['aboutshop'] ?? 'Not available';
-
+    final Shop tempShop = arguments?['shop'] ?? 'Not available';
+    final aboutShop = tempShop.shopAddress;
     final TextSpan textSpan = TextSpan(
       text: aboutShop,
       style: const TextStyle(color: Colors.grey, fontSize: 18),
@@ -65,15 +67,14 @@ class _ShopDetailsState extends State<ShopDetails> {
   }
 
   UserModel? user;
-  String? sId;
   double? tAmount;
   String status = "Pending";
   DateTime selectedDate = DateTime.now();
   String finalDate = "";
+  Shop? _shop;
 
-  Future<bool?> registerBooking() async {
+  Future<Booking> registerBooking() async {
     showLoadingDialog(context);
-    bool success = false;
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     String? userJson = prefs.getString("user");
@@ -90,7 +91,10 @@ class _ShopDetailsState extends State<ShopDetails> {
       bookingId: bookingRef.key.toString(),
       numberOfSeatorTable: 0,
       userId: user!.uId!,
-      shopId: sId!,
+      shopId: _shop!.shopId!,
+      shopName: _shop!.shopName!,
+      shopAddress: _shop!.shopAddress!,
+      shopCategory: _shop!.shopCategory!,
       date: finalDate,
       serviceList: selectedServices,
       totalFee: tAmount.toString(),
@@ -102,14 +106,13 @@ class _ShopDetailsState extends State<ShopDetails> {
       await bookingRef.set(booking.toJson());
       if (mounted) {
         dismissLoadingDialog(); // Dismiss the loading dialog
-        success = true;
+        return booking;
       }
     } catch (e) {
       // print(e);
       dismissLoadingDialog();
-      success = false;
     }
-    return success;
+    return booking;
   }
 
   @override
@@ -119,20 +122,8 @@ class _ShopDetailsState extends State<ShopDetails> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.sizeOf(context).height * 0.45;
 
-    final String shopName = arguments?['name'] ?? 'Unknown Shop';
-    final String location = arguments?['location'] ?? 'Unknown Location';
-    final String mainImage = arguments?['image'] ?? 'assets/images/Im1.png';
-    final String aboutShop = arguments?['aboutshop'] ?? 'Not available';
-    final String startTime = arguments?['openingTime'] ?? "";
-    final String endTime = arguments?['endTime'] ?? "";
-    final String mStartTime = arguments?['mStartTime'] ?? "";
-    final String mEndTime = arguments?['mEndTime'] ?? "";
-    final String eStartTime = arguments?['eStartTime'] ?? "";
-    final String eEndTime = arguments?['eEndTime'] ?? "";
-    final String mapLink = arguments?['mapLink'] ?? "";
-    final String shopId = arguments?['shopId'] ?? 'Not available';
-
-    final List<ShopService>? shopServices = arguments?['shopServices'] ?? [];
+    final Shop shop = arguments?['shop'];
+    final List<ShopService>? shopServices = shop.shopServices;
 
     final String formattedDate =
         '${selectedDate.day.toString().padLeft(2, '0')}/'
@@ -140,9 +131,11 @@ class _ShopDetailsState extends State<ShopDetails> {
         '${selectedDate.year.toString().substring(2)}'; // Getting last two digits of the year
 
     setState(() {
-      sId = shopId;
+      _shop = shop;
       finalDate = formattedDate;
     });
+
+    // print(_shop?.toJson());
 
     return Scaffold(
       body: SafeArea(
@@ -162,7 +155,7 @@ class _ShopDetailsState extends State<ShopDetails> {
                     height: screenHeight,
                     decoration: BoxDecoration(
                       image: DecorationImage(
-                        image: NetworkImage(mainImage),
+                        image: NetworkImage(shop.shopImageUrl ?? ""),
                         fit: BoxFit.cover,
                       ),
                       boxShadow: [
@@ -198,19 +191,19 @@ class _ShopDetailsState extends State<ShopDetails> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            shopName,
+                            shop.shopName ?? "",
                             style: const TextStyle(
                                 fontSize: 24, color: Colors.white),
                           ),
                           const SizedBox(width: 10),
-                          startTime.isNotEmpty
+                          shop.startTime != null
                               ? Text(
-                                  "$startTime - $endTime",
+                                  "${shop.startTime} - ${shop.endTime}",
                                   style: const TextStyle(
                                       fontSize: 16, color: Colors.white),
                                 )
                               : Text(
-                                  "$mStartTime - $mEndTime | $eStartTime - $eEndTime",
+                                  "${shop.mStartTime} - ${shop.mEndTime} | ${shop.eStartTime} - ${shop.eEndTime}",
                                   style: const TextStyle(
                                       fontSize: 16, color: Colors.white),
                                 ),
@@ -221,7 +214,7 @@ class _ShopDetailsState extends State<ShopDetails> {
                         children: [
                           Expanded(
                             child: Text(
-                              location,
+                              shop.shopAddress ?? "",
                               style: const TextStyle(
                                   fontSize: 17, color: Colors.white),
                             ),
@@ -238,14 +231,15 @@ class _ShopDetailsState extends State<ShopDetails> {
                                   TextStyle(color: Colors.white, fontSize: 16),
                             ),
                             onPressed: () async {
-                              final Uri uri = Uri.parse(mapLink);
+                              final Uri uri = Uri.parse(shop.mapLink ?? "");
                               if (await canLaunchUrl(uri)) {
                                 await launchUrl(uri);
                               } else {
                                 // Optionally show a snackbar or dialog for error feedback
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Could not launch $mapLink'),
+                                    content: Text(
+                                        'Could not launch ${shop.mapLink}'),
                                   ),
                                 );
                               }
@@ -271,7 +265,7 @@ class _ShopDetailsState extends State<ShopDetails> {
                       ),
                       get10height(),
                       Text(
-                        aboutShop,
+                        shop.shopAbout ?? "",
                         maxLines: isExpanded ? null : 2,
                         overflow: isExpanded
                             ? TextOverflow.visible
@@ -312,13 +306,17 @@ class _ShopDetailsState extends State<ShopDetails> {
                           ),
                         ],
                       ),
-                      get10height(),
                       if (shopServices?.isNotEmpty ?? false)
-                        const Text(
-                          "Services",
-                          style: TextStyle(fontSize: 25),
+                        Column(
+                          children: [
+                            get10height(),
+                            const Text(
+                              "Services",
+                              style: TextStyle(fontSize: 25),
+                            ),
+                            get10height(),
+                          ],
                         ),
-                      get10height(),
                       if (shopServices?.isNotEmpty ?? false)
                         SizedBox(
                           height: 200,
@@ -363,36 +361,24 @@ class _ShopDetailsState extends State<ShopDetails> {
                       get10height(),
                       getMainButton(
                         onPressed: () async {
-                          if (selectedServices.isNotEmpty) {
-                            bool? success = await registerBooking();
-                            if (success ?? false) {
-                              Navigator.pushNamed(
-                                context,
-                                "/summary_screen_screen",
-                                arguments: {
-                                  "name": shopName,
-                                  "selectedServices": selectedServices,
-                                  "location": location,
-                                  "date": finalDate,
-                                  "totalAmount": tAmount,
-                                  "status": status,
-                                },
-                              );
-                            } else {
+                          if (shop.shopCategory == "Salon") {
+                            if (selectedServices.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text("Internal Error"),
+                                  content:
+                                      Text("Please select at least a service"),
                                 ),
                               );
+                              return;
                             }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text("Please select at least a service"),
-                              ),
-                            );
                           }
+                          Booking booking = await registerBooking();
+                          SummaryScreen.booking = booking;
+                          if (!mounted) return;
+                          Navigator.pushNamed(
+                            context,
+                            "/summary_screen_screen",
+                          );
                         },
                         name: "Sent Request",
                       ),

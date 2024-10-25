@@ -97,13 +97,13 @@ class ProfileMenuList extends StatelessWidget {
             Navigator.pushNamed(context, "/edit_profile_screen");
           },
         ),
-        // ProfileMenuItem(
-        //   icon: Icons.favorite_outline,
-        //   text: "Favourites",
-        //   onTap: () {
-        //     // Navigator.pushNamed(context, "/favourites_screen");
-        //   },
-        // ),
+        ProfileMenuItem(
+          icon: Icons.track_changes,
+          text: "Track your request",
+          onTap: () {
+            Navigator.pushNamed(context, "/requests_screen_screen");
+          },
+        ),
         // ProfileMenuItem(
         //   icon: Icons.history,
         //   text: "Recently Viewed Shops",
