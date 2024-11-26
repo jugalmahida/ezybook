@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:ezybook/Screens/summaryscreen.dart';
 import 'package:ezybook/models/booking.dart';
 import 'package:ezybook/models/shop.dart';
 import 'package:ezybook/models/shopservice.dart';
@@ -70,10 +69,11 @@ class _ShopDetailsState extends State<ShopDetails> {
   double? tAmount;
   String status = "Pending";
   DateTime selectedDate = DateTime.now();
+  TimeOfDay selectedTime = TimeOfDay.now(); // Default to current time
   String finalDate = "";
   Shop? _shop;
 
-  Future<Booking> registerBooking() async {
+  Future<String> registerBooking() async {
     showLoadingDialog(context);
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -88,6 +88,7 @@ class _ShopDetailsState extends State<ShopDetails> {
     DatabaseReference ref = FirebaseDatabase.instance.ref("Booking");
     DatabaseReference bookingRef = ref.push();
     Booking booking = Booking(
+      reachOutTime: selectedTime.format(context),
       bookingId: bookingRef.key.toString(),
       numberOfSeatorTable: 0,
       userId: user!.uId!,
@@ -106,13 +107,13 @@ class _ShopDetailsState extends State<ShopDetails> {
       await bookingRef.set(booking.toJson());
       if (mounted) {
         dismissLoadingDialog(); // Dismiss the loading dialog
-        return booking;
+        return bookingRef.key.toString();
       }
     } catch (e) {
       // print(e);
       dismissLoadingDialog();
     }
-    return booking;
+    return "";
   }
 
   @override
@@ -306,6 +307,26 @@ class _ShopDetailsState extends State<ShopDetails> {
                           ),
                         ],
                       ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Text(
+                            "Reachout Time - ${selectedTime.format(context)}",
+                            style: const TextStyle(fontSize: 17),
+                          ),
+                          TextButton.icon(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () {
+                              _selectTime(context);
+                            },
+                            label: const Text("Pick Time"),
+                          ),
+                        ],
+                      ),
+                      const Text(
+                        "Note :- Reachout time must be between shop starting time and ending time",
+                        style: TextStyle(fontSize: 16),
+                      ),
                       if (shopServices?.isNotEmpty ?? false)
                         Column(
                           children: [
@@ -323,22 +344,22 @@ class _ShopDetailsState extends State<ShopDetails> {
                           child: ListView.builder(
                             itemBuilder: (BuildContext context, int index) {
                               final service = shopServices?[index];
-                              return ListTile(
-                                leading: Checkbox(
-                                  value: selectedServices.contains(service),
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      if (value == true) {
-                                        selectedServices.add(service!);
-                                      } else {
-                                        selectedServices.remove(service);
-                                      }
-                                      final totalAmount = _calculateTotalAmount(
-                                          selectedServices);
-                                      tAmount = totalAmount;
-                                    });
-                                  },
-                                ),
+                              return CheckboxListTile(
+                                controlAffinity:
+                                    ListTileControlAffinity.leading,
+                                value: selectedServices.contains(service),
+                                onChanged: (bool? value) {
+                                  setState(() {
+                                    if (value == true) {
+                                      selectedServices.add(service!);
+                                    } else {
+                                      selectedServices.remove(service);
+                                    }
+                                    final totalAmount =
+                                        _calculateTotalAmount(selectedServices);
+                                    tAmount = totalAmount;
+                                  });
+                                },
                                 title: Text(
                                   "${service?.serviceName}",
                                   style: const TextStyle(
@@ -349,7 +370,7 @@ class _ShopDetailsState extends State<ShopDetails> {
                                   "Approx time - ${service?.serviceDuration} ${service?.minOrHr}",
                                   style: const TextStyle(fontSize: 16),
                                 ),
-                                trailing: Text(
+                                secondary: Text(
                                   "₹${service?.serviceCharge}",
                                   style: const TextStyle(fontSize: 16),
                                 ),
@@ -372,13 +393,10 @@ class _ShopDetailsState extends State<ShopDetails> {
                               return;
                             }
                           }
-                          Booking booking = await registerBooking();
-                          SummaryScreen.booking = booking;
+                          String bookingID = await registerBooking();
                           if (!mounted) return;
-                          Navigator.pushNamed(
-                            context,
-                            "/summary_screen_screen",
-                          );
+                          Navigator.pushNamed(context, "/summary_screen_screen",
+                              arguments: {"bookingID": bookingID});
                         },
                         name: "Sent Request",
                       ),
@@ -397,12 +415,28 @@ class _ShopDetailsState extends State<ShopDetails> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime(2024),
+      firstDate: DateTime.now(),
       lastDate: DateTime(2030),
     );
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked; // Update the selected date
+      });
+    }
+  }
+
+  // Function to show the time picker dialog
+  Future<void> _selectTime(BuildContext context) async {
+    // Show the time picker and wait for the user to select a time
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: selectedTime, // Set the initial time
+    );
+
+    // If the user selects a time (not null), update the selected time
+    if (picked != null && picked != selectedTime) {
+      setState(() {
+        selectedTime = picked;
       });
     }
   }

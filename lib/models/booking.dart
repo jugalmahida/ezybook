@@ -8,10 +8,12 @@ class Booking {
   String shopName;
   String shopAddress;
   String date;
+  String reachOutTime;
   List<ShopService>? serviceList;
   String? totalFee;
   String customerName;
   String status;
+  String? cancelReason;
   int numberOfSeatorTable;
 
   Booking({
@@ -22,10 +24,12 @@ class Booking {
     required this.shopName,
     required this.shopAddress,
     required this.date,
+    required this.reachOutTime,
     this.serviceList,
     this.totalFee,
     required this.customerName,
     required this.status,
+    this.cancelReason,
     required this.numberOfSeatorTable,
   });
 
@@ -47,10 +51,12 @@ class Booking {
       shopName: json['shopName'],
       shopAddress: json['shopAddress'],
       date: json['date'],
+      reachOutTime: json['reachOutTime'],
       serviceList: sl,
       totalFee: json['totalFee'],
       customerName: json['customerName'],
       status: json['status'],
+      cancelReason: json['cancelReason'],
       numberOfSeatorTable: json['numberOfSeatorTable'],
     );
   }
@@ -64,12 +70,14 @@ class Booking {
     data['totalFee'] = totalFee;
     data['customerName'] = customerName;
     data['status'] = status;
+    data['cancelReason'] = cancelReason;
     data['userId'] = userId;
     data['shopId'] = shopId;
     data['shopName'] = shopName;
     data['shopCategory'] = shopCategory;
     data['shopAddress'] = shopAddress;
     data['date'] = date;
+    data['reachOutTime'] = reachOutTime;
     return data;
   }
 }

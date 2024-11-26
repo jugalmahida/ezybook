@@ -103,6 +103,9 @@ class _RequestsScreenState extends State<RequestsScreen> {
                         Navigator.pushNamed(
                           context,
                           "/summary_screen_screen",
+                          arguments: {
+                            "bookingID": booking?.bookingId,
+                          },
                         );
                       },
                     ),
