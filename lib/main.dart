@@ -1,11 +1,16 @@
+import 'dart:convert';
+
 import 'package:ezybook/Screens/UserProfile.dart';
 import 'package:ezybook/Screens/editprofile.dart';
+import 'package:ezybook/models/user.dart';
+import 'package:ezybook/utilities/notification_services.dart';
 import 'package:ezybook/Screens/requestsscreen.dart';
 import 'package:ezybook/Screens/searchscreen.dart';
 import 'package:ezybook/Screens/shopdetails.dart';
 import 'package:ezybook/Screens/summaryscreen.dart';
 import 'package:ezybook/Screens/timetablescreen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'Screens/forgetpasswordscreen.dart';
 import 'Screens/homescreen.dart';
@@ -21,6 +26,18 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  NotificationService notificationService = NotificationService();
+  await notificationService.initNotification(); // Initialize notifications
+  UserModel? user;
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  String? userJson = prefs.getString("user");
+  if (userJson != null) {
+    Map<String, dynamic> userMap = jsonDecode(userJson);
+    user = UserModel.fromJson(userMap);
+  }
+  notificationService
+      .listenForBookingsStatus(user?.uId ?? ""); // Listenforbooking stauts
   runApp(const MyApp());
 }
 
