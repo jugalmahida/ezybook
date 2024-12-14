@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:ezybook/Screens/messagescreen.dart';
 import 'package:ezybook/models/shop.dart';
 import 'package:ezybook/models/user.dart';
+import 'package:ezybook/utilities/notification_services.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,21 +18,28 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final PageController pageController = PageController(initialPage: 0);
-  late int _selectedIndex = 0;
   List<Shop> _shopList = []; // State variable to hold shops
   UserModel? user;
+
+  setUpNotification() async {
+    NotificationService notificationService = NotificationService();
+    await notificationService.initNotification(); // Initialize notifications
+    UserModel? user;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String? userJson = prefs.getString("user");
+    if (userJson != null) {
+      Map<String, dynamic> userMap = jsonDecode(userJson);
+      user = UserModel.fromJson(userMap);
+    }
+    notificationService
+        .listenForBookingsStatus(user?.uId ?? ""); // Listenforbooking stauts
+  }
 
   @override
   void initState() {
     super.initState();
-    pageController.addListener(() {
-      final newIndex = pageController.page?.round() ?? 0;
-      if (newIndex != _selectedIndex) {
-        setState(() {
-          _selectedIndex = newIndex;
-        });
-      }
-    });
+    setUpNotification();
     _getShopData(); // Fetch shop data
     getUserData(); // fetch user data
   }
@@ -62,7 +69,6 @@ class _HomeScreenState extends State<HomeScreen> {
             Shop shop =
                 Shop.fromJson(value.cast<String, dynamic>(), key.toString());
             shopList.add(shop);
-            // print(shop.toJson());
           }
         });
 
@@ -80,32 +86,41 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Image.asset("assets/images/ProfileIcon.png"),
+          icon: CircleAvatar(
+            radius: 20, // Adjust the size as needed
+            backgroundColor: Colors
+                .blue, // Set a background color or use a color from the user's profile
+            child: Text(
+              user?.name?.isNotEmpty == true
+                  ? user!.name![0].toUpperCase()
+                  : '?', // First letter of the name
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
           onPressed: () {
             // here i want to open profile popup
             _showProfileMenu(context);
           },
         ),
-        backgroundColor: const Color(0xFFf7f7f9),
+        // backgroundColor: const Color(0xFFf7f7f9),
         title: Text("Hello, ${user?.name}"),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.notifications,
-              size: 24,
-            ),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     onPressed: () {},
+        //     icon: const Icon(
+        //       Icons.notifications,
+        //       size: 24,
+        //     ),
+        //   ),
+        // ],
       ),
-      body: PageView(
-        controller: pageController,
-        children: [
-          Home(allshopDetails: _shopList), // Correctly pass the data
-          const MessageScreen(), // Ensure this is correctly defined
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      body: Home(allshopDetails: _shopList), // Correctly pass the data
+
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF24baec),
         foregroundColor: Colors.white,
@@ -121,29 +136,29 @@ class _HomeScreenState extends State<HomeScreen> {
         },
         child: const Icon(Icons.search),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        iconSize: 29,
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-            pageController.jumpToPage(index);
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message_outlined),
-            label: 'Messages',
-          ),
-        ],
-      ),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   iconSize: 29,
+      //   type: BottomNavigationBarType.fixed,
+      //   currentIndex: _selectedIndex,
+      //   selectedItemColor: Colors.blue,
+      //   unselectedItemColor: Colors.grey,
+      //   onTap: (index) {
+      //     setState(() {
+      //       _selectedIndex = index;
+      //       pageController.jumpToPage(index);
+      //     });
+      //   },
+      //   items: const [
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.home_outlined),
+      //       label: 'Home',
+      //     ),
+      //     BottomNavigationBarItem(
+      //       icon: Icon(Icons.message_outlined),
+      //       label: 'Messages',
+      //     ),
+      //   ],
+      // ),
     );
   }
 

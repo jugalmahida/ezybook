@@ -1,10 +1,12 @@
 class ShopService {
+  String? serviceId;
   String? serviceName;
   String? serviceDuration;
   String? minOrHr;
   String? serviceCharge;
 
   ShopService({
+    this.serviceId,
     this.serviceName,
     this.serviceDuration,
     this.minOrHr,
@@ -12,8 +14,9 @@ class ShopService {
   });
 
   // Create a ShopService instance from a JSON map
-  factory ShopService.fromJson(Map<String, dynamic> json) {
+  factory ShopService.fromJson(Map<String, dynamic> json, String? serviceId) {
     return ShopService(
+      serviceId: serviceId,
       serviceName: json['serviceName'],
       serviceDuration: json['serviceDuration'],
       minOrHr: json['minOrHr'],

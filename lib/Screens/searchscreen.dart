@@ -77,7 +77,7 @@ class _SearchScreenState extends State<SearchScreen> {
               controller: _searchQuery,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: const Color.fromARGB(255, 242, 242, 247),
+                // fillColor: const Color.fromARGB(255, 242, 242, 247),
                 hintText: "Search shops by name, area",
                 border: OutlineInputBorder(
                   borderSide: BorderSide.none,
@@ -119,23 +119,13 @@ class _SearchScreenState extends State<SearchScreen> {
                         final shop = _filteredShops[index];
                         return GestureDetector(
                           onTap: () {
+                            // Unfocus the text field
+                            FocusManager.instance.primaryFocus?.unfocus();
                             Navigator.pushNamed(
                               context,
                               "/shop_details_screen",
                               arguments: {
-                                'shopId': shop?.shopId,
-                                'name': shop?.shopName,
-                                'location': shop?.shopAddress,
-                                'image': shop?.shopImageUrl,
-                                'aboutshop': shop?.shopAbout,
-                                'openingTime': shop?.startTime,
-                                'endTime': shop?.endTime,
-                                'mStartTime': shop?.mStartTime,
-                                'mEndTime': shop?.mEndTime,
-                                'eStartTime': shop?.eStartTime,
-                                'eEndTime': shop?.eEndTime,
-                                'mapLink': shop?.mapLink,
-                                'shopServices': shop?.shopServices,
+                                'shop': shop,
                               },
                             );
                           },
@@ -176,13 +166,30 @@ class _SearchScreenState extends State<SearchScreen> {
                                             ),
                                           ],
                                         ),
-                                        const SizedBox(height: 4),
+                                        const SizedBox(height: 5),
                                         Text(
                                           shop?.shopAddress ?? "",
                                           style: TextStyle(
                                               color: Colors.grey[600],
                                               fontSize: 16),
                                         ),
+                                        const SizedBox(
+                                          height: 5,
+                                        ),
+                                        shop?.mStartTime == "" ||
+                                                shop?.mStartTime == null
+                                            ? Text(
+                                                "${shop?.startTime} - ${shop?.endTime}",
+                                                style: TextStyle(
+                                                    color: Colors.grey[600],
+                                                    fontSize: 16),
+                                              )
+                                            : Text(
+                                                "${shop?.mStartTime} - ${shop?.mEndTime} | ${shop?.eStartTime} - ${shop?.eEndTime}",
+                                                style: TextStyle(
+                                                    color: Colors.grey[600],
+                                                    fontSize: 16),
+                                              ),
                                       ],
                                     ),
                                   ),

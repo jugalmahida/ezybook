@@ -19,7 +19,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
   List<Booking>? requestedBooking = [];
   Shop? shop;
   StreamSubscription<DatabaseEvent>? _subscription; // Declare the subscription
-
+  Query? bookingQuery;
   getBookingData() async {
     UserModel? user;
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -55,6 +55,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
           // Check if the widget is still mounted
           setState(() {
             requestedBooking = newBookings;
+            bookingQuery = query;
           });
         }
       }
@@ -73,6 +74,13 @@ class _RequestsScreenState extends State<RequestsScreen> {
     super.dispose();
   }
 
+  void _deleteBookingById(String bookingId) async {
+    // print(bookingQuery?.ref.child(bookingId));
+    await bookingQuery?.ref // Reference the root of the database
+        .child(bookingId) // The specific booking by ID
+        .remove();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,28 +94,68 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 itemCount: requestedBooking?.length,
                 itemBuilder: (context, index) {
                   Booking? booking = requestedBooking?[index];
-                  return Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.store),
-                      title: Text("${booking?.shopName}"),
-                      subtitle: Text(
-                        "Booking Status - ${booking?.status}",
-                        style: const TextStyle(fontSize: 15),
+                  return GestureDetector(
+                    onLongPress: () async {
+                      bool shouldDelete = await showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text("Delete Booking"),
+                                content: const Text(
+                                    "Are you sure you want to delete this booking?"),
+                                actions: <Widget>[
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .pop(false); // Cancel
+                                    },
+                                    child: const Text("Cancel"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .pop(true); // Confirm delete
+                                    },
+                                    child: const Text("Delete"),
+                                  ),
+                                ],
+                              );
+                            },
+                          ) ??
+                          false;
+                      if (shouldDelete) {
+                        // print(booking?.bookingId);
+                        _deleteBookingById(booking!.bookingId);
+                        // Navigate to the home screen, if still mounted
+                        if (mounted) {
+                          Navigator.pushReplacementNamed(
+                              context, '/home_screen');
+                        }
+                      }
+                    },
+                    child: Card(
+                      child: ListTile(
+                        leading: const Icon(Icons.store),
+                        title: Text("${booking?.shopName}"),
+                        subtitle: Text(
+                          "Booking Status - ${booking?.status}",
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                        trailing: Text(
+                          "Date - ${booking?.date}",
+                          style: const TextStyle(fontSize: 15),
+                        ),
+                        onTap: () {
+                          SummaryScreen.booking = booking;
+                          Navigator.pushNamed(
+                            context,
+                            "/summary_screen_screen",
+                            arguments: {
+                              "bookingID": booking?.bookingId,
+                            },
+                          );
+                        },
                       ),
-                      trailing: Text(
-                        "Date - ${booking?.date}",
-                        style: const TextStyle(fontSize: 15),
-                      ),
-                      onTap: () {
-                        SummaryScreen.booking = booking;
-                        Navigator.pushNamed(
-                          context,
-                          "/summary_screen_screen",
-                          arguments: {
-                            "bookingID": booking?.bookingId,
-                          },
-                        );
-                      },
                     ),
                   );
                 },
