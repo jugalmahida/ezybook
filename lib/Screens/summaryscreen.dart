@@ -1,7 +1,10 @@
 import 'package:ezybook/models/booking.dart';
+import 'package:ezybook/widgets/button.dart';
 import 'package:ezybook/widgets/sizedbox.dart';
+import 'package:ezybook/widgets/snakbar.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SummaryScreen extends StatefulWidget {
   const SummaryScreen({super.key});
@@ -48,6 +51,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
       final data = event.snapshot.value as Map<Object?, Object?>?;
 
       if (data != null && mounted) {
+        // print(data);
         // Check if widget is still mounted
         // Map the data to your Booking model
         setState(() {
@@ -142,6 +146,21 @@ class _SummaryScreenState extends State<SummaryScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const Icon(Icons.access_time_rounded),
+                        const SizedBox(
+                          width: 10,
+                        ),
+                        Text(
+                          SummaryScreen.booking?.reachOutTime ?? "N/A",
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    get10height(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
                         const Icon(Icons.location_on),
                         const SizedBox(width: 10),
                         Expanded(
@@ -167,7 +186,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                               get10height(),
                               ListView(
                                 shrinkWrap: true,
-                                children: SummaryScreen.booking!.serviceList!
+                                children: SummaryScreen.booking!.shopServices!
                                     .map((shopService) {
                                   return Padding(
                                     padding: const EdgeInsets.symmetric(
@@ -242,21 +261,162 @@ class _SummaryScreenState extends State<SummaryScreen> {
                           )
                         : const SizedBox(),
                     get10height(),
-                    ElevatedButton.icon(
+                    TextButton.icon(
+                      onPressed: () async {
+                        TimeOfDay selectDateTime =
+                            TimeOfDay.now(); // Default to current time
+
+                        final TimeOfDay? picked = await showTimePicker(
+                          context: context,
+                          initialTime: selectDateTime, // Set the initial time
+                        );
+
+                        // If the user selects a time (not null), update the selected time
+                        if (picked != null) {
+                          setState(() {
+                            selectDateTime = picked;
+                            // print(picked.format(context));
+                            bookingRef.update(
+                                {"reachOutTime": picked.format(context)});
+                          });
+                        }
+                      },
+                      icon: const Icon(Icons.access_time_rounded),
                       label: const Text(
-                        "Chat with Owner",
-                        style: TextStyle(fontSize: 16),
+                        "Change ReachOut Time",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
                       ),
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.chat,
-                        size: 20,
+                    ),
+                    TextButton.icon(
+                      onPressed: () async {
+                        Uri phoneUri = Uri.parse(
+                            'tel:${SummaryScreen.booking!.shopNumber}'); // Phone number you want to dial
+                        _launch(phoneUri, context);
+                      },
+                      icon: const Icon(Icons.call),
+                      label: Text(
+                        "Call the ${SummaryScreen.booking!.shopName}",
+                        style: const TextStyle(
+                          fontSize: 16,
+                        ),
                       ),
-                    )
+                    ),
+                    get10height(),
+                    getMainButton(
+                        onPressed: () {
+                          final reasons = [
+                            "Today, I am Busy!!!",
+                            "Other (please specify)",
+                          ];
+
+                          TextEditingController customController =
+                              TextEditingController();
+
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              String?
+                                  selectedReason; // Move this inside the builder
+
+                              return AlertDialog(
+                                title: const Text("Select a cancel reason"),
+                                content: StatefulBuilder(
+                                  builder: (context, setState) {
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // Radio buttons for selecting a reason
+                                        for (var reason in reasons)
+                                          ListTile(
+                                            title: Text(reason),
+                                            leading: Radio<String>(
+                                              value: reason,
+                                              groupValue: selectedReason,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  selectedReason = value;
+                                                  if (value !=
+                                                      "Other (please specify)") {
+                                                    customController
+                                                        .clear(); // Clear custom message if a reason is selected
+                                                  }
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        // Text field for custom message
+                                        if (selectedReason ==
+                                            "Other (please specify)")
+                                          TextField(
+                                            controller: customController,
+                                            decoration: const InputDecoration(
+                                              labelText: 'Please specify',
+                                            ),
+                                          ),
+                                      ],
+                                    );
+                                  },
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      selectedReason = selectedReason?.trim();
+                                      if (selectedReason != null) {
+                                        // Handle the selected reason and optional custom message
+                                        if (selectedReason ==
+                                            "Other (please specify)") {
+                                          if (customController.text
+                                              .trim()
+                                              .isEmpty) {
+                                            getSnakbar("Please give a reason",
+                                                context);
+                                            return;
+                                          }
+                                        }
+
+                                        var upData = {
+                                          "status": "Cancel",
+                                          "cancelReason": selectedReason ==
+                                                  "Other (please specify)"
+                                              ? customController.text.trim()
+                                              : selectedReason,
+                                          "numberOfSeatorTable": 0,
+                                        };
+                                        // Update booking reference
+                                        bookingRef.update(upData);
+                                        Navigator.of(context)
+                                            .pop(); // Close the dialog
+                                      } else {
+                                        // Show a Snackbar if no reason is selected
+                                        getSnakbar(
+                                            "Please select a reason", context);
+                                      }
+                                    },
+                                    child: const Text("Submit"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        name: "Cancel Request"),
                   ],
                 ),
         ),
       ),
     );
+  }
+
+  Future<void> _launch(Uri url, BuildContext context) async {
+    await canLaunchUrl(url)
+        ? await launchUrl(url)
+        : getSnakbar('Could not launch', context);
   }
 }

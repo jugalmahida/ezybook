@@ -37,7 +37,7 @@ class _SigninScreenState extends State<SigninScreen> {
     return Scaffold(
       body: Container(
         padding: const EdgeInsets.all(20),
-        color: const Color(0xfffefffe),
+        // color: const Color(0xfffefffe),
         child: SafeArea(
           child: Form(
             key: _formKey,
@@ -247,6 +247,7 @@ class _SigninScreenState extends State<SigninScreen> {
             uId: userId.toString(), // Cast userId to String
             email: userInfo['email'] as String,
             name: userInfo['name'] as String,
+            number: userInfo['number'] as String,
           );
           return user; // Return the User instance
         }

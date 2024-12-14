@@ -46,7 +46,7 @@ class _SignupScreenState extends State<SignupScreen> {
     return Scaffold(
       body: Container(
         padding: const EdgeInsets.all(20),
-        color: const Color(0xfffefffe),
+        // color: const Color(0xfffefffe),
         child: SafeArea(
           child: Center(
             child: Form(

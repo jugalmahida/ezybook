@@ -86,16 +86,27 @@ class _CategorySectionState extends State<CategorySection> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          const SizedBox(width: 5),
-                          Text(
-                            shop?.shopName ?? "",
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                        ],
+                      Text(
+                        shop?.shopName ?? "",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
                       ),
+                      const SizedBox(
+                        height: 5,
+                      ),
+                      shop?.mStartTime == "" || shop?.mStartTime == null
+                          ? Text(
+                              "${shop?.startTime} - ${shop?.endTime}",
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                              ),
+                            )
+                          : Text(
+                              "${shop?.mStartTime} - ${shop?.mEndTime} | ${shop?.eStartTime} - ${shop?.eEndTime}",
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                              ),
+                            ),
                     ],
                   ),
                 ),

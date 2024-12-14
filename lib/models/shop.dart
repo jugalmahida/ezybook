@@ -46,15 +46,17 @@ class Shop {
     this.shopServices,
   });
   factory Shop.fromJson(Map<String, dynamic> json, String shopId) {
-    // Get the list of shop services, or null if not present
-    List<dynamic>? s = json['shopServices'];
-
-    // If 'shopServices' is not null, map it to a list of ShopService
-    List<ShopService>? sl = s
-        ?.map(
-            (element) => ShopService.fromJson(element.cast<String, dynamic>()))
-        .toList();
-
+    List<ShopService>? sl = [];
+    Map<Object?, Object?>? s = json['shopServices'];
+    if (s != null && s.isNotEmpty) {
+      s.forEach((key, value) {
+        if (value is Map<Object?, Object?>) {
+          ShopService shopService = ShopService.fromJson(
+              value.cast<String, dynamic>(), key.toString());
+          sl.add(shopService);
+        }
+      });
+    }
     return Shop(
       shopId: shopId,
       shopImageUrl: json['shopImageUrl'],

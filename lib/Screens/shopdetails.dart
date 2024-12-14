@@ -92,12 +92,14 @@ class _ShopDetailsState extends State<ShopDetails> {
       bookingId: bookingRef.key.toString(),
       numberOfSeatorTable: 0,
       userId: user!.uId!,
+      shopNumber: _shop!.shopNumber!,
+      userNumber: user!.number!,
       shopId: _shop!.shopId!,
       shopName: _shop!.shopName!,
       shopAddress: _shop!.shopAddress!,
       shopCategory: _shop!.shopCategory!,
       date: finalDate,
-      serviceList: selectedServices,
+      shopServices: selectedServices,
       totalFee: tAmount.toString(),
       customerName: user!.name!,
       status: status,
@@ -141,7 +143,6 @@ class _ShopDetailsState extends State<ShopDetails> {
     return Scaffold(
       body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Stack(
               alignment: Alignment.bottomCenter,
@@ -188,8 +189,8 @@ class _ShopDetailsState extends State<ShopDetails> {
                   ),
                   child: Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Text(
                             shop.shopName ?? "",
@@ -265,61 +266,66 @@ class _ShopDetailsState extends State<ShopDetails> {
                         style: TextStyle(fontSize: 25),
                       ),
                       get10height(),
-                      Text(
-                        shop.shopAbout ?? "",
-                        maxLines: isExpanded ? null : 2,
-                        overflow: isExpanded
-                            ? TextOverflow.visible
-                            : TextOverflow.ellipsis,
-                        style:
-                            const TextStyle(color: Colors.grey, fontSize: 18),
+                      AnimatedCrossFade(
+                        firstChild: Text(
+                          shop.shopAbout ?? "",
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              const TextStyle(color: Colors.grey, fontSize: 18),
+                        ),
+                        secondChild: Text(
+                          shop.shopAbout ?? "",
+                          style:
+                              const TextStyle(color: Colors.grey, fontSize: 18),
+                        ),
+                        crossFadeState: isExpanded
+                            ? CrossFadeState.showSecond
+                            : CrossFadeState.showFirst,
+                        duration: const Duration(milliseconds: 300),
                       ),
-                      if (isOverflowing)
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              isExpanded = !isExpanded;
-                            });
-                          },
-                          child: Text(
-                            isExpanded ? 'Read less' : 'Read more',
-                            style: const TextStyle(
-                              color: Colors.blue,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 17,
-                            ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            isExpanded = !isExpanded;
+                          });
+                        },
+                        child: Text(
+                          isExpanded ? 'Read less' : 'Read more',
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
                           ),
                         ),
-                      get10height(),
+                      ),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             "Booking Date - $formattedDate",
                             style: const TextStyle(fontSize: 17),
                           ),
-                          TextButton.icon(
-                            icon: const Icon(Icons.edit),
+                          TextButton(
+                            child: const Icon(Icons.calendar_month_rounded),
                             onPressed: () {
                               _selectDate(context);
                             },
-                            label: const Text("Change Date"),
                           ),
                         ],
                       ),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
                             "Reachout Time - ${selectedTime.format(context)}",
                             style: const TextStyle(fontSize: 17),
                           ),
-                          TextButton.icon(
-                            icon: const Icon(Icons.edit),
+                          TextButton(
                             onPressed: () {
                               _selectTime(context);
                             },
-                            label: const Text("Pick Time"),
+                            child: const Icon(Icons.access_time_rounded),
                           ),
                         ],
                       ),
@@ -335,13 +341,13 @@ class _ShopDetailsState extends State<ShopDetails> {
                               "Services",
                               style: TextStyle(fontSize: 25),
                             ),
-                            get10height(),
                           ],
                         ),
                       if (shopServices?.isNotEmpty ?? false)
                         SizedBox(
-                          height: 200,
+                          height: 250, // Approximate height per item
                           child: ListView.builder(
+                            shrinkWrap: true,
                             itemBuilder: (BuildContext context, int index) {
                               final service = shopServices?[index];
                               return CheckboxListTile(
