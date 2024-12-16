@@ -2,6 +2,8 @@
 import 'dart:convert';
 
 import 'package:ezybook/models/user.dart';
+import 'package:ezybook/widgets/sizedbox.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -14,6 +16,8 @@ class UserProfile extends StatefulWidget {
 
 class _UserProfileState extends State<UserProfile> {
   UserModel? user;
+  UserModel? userRealTime;
+
   @override
   void initState() {
     super.initState();
@@ -28,27 +32,34 @@ class _UserProfileState extends State<UserProfile> {
       Map<String, dynamic> userMap = jsonDecode(userJson);
       setState(() {
         user = UserModel.fromJson(userMap);
-        // getCounts();
+        getUserDataFromFirebase();
       });
     }
   }
 
-  // getCounts() {
-  //   Query query = FirebaseDatabase.instance
-  //       .ref("Booking")
-  //       .orderByChild("userId")
-  //       .equalTo(user?.uId ?? "");
-  //   query.onValue.listen((DatabaseEvent event) {
-  //     final snapshot = event.snapshot;
-  //     final data = snapshot.value as Map<Object?, Object?>?;
+  getUserDataFromFirebase() {
+    Query query = FirebaseDatabase.instance.ref("Users");
+    query.onValue.listen((DatabaseEvent event) {
+      final snapshot = event.snapshot;
+      final data = snapshot.value as Map<Object?, Object?>?;
 
-  //     if (data != null && data.isNotEmpty) {
-  //       print(data.length);
-  //     }
-  //   }, onError: (error) {
-  //     print('Error occurred: $error');
-  //   });
-  // }
+      if (data != null) {
+        data.forEach((key, value) {
+          if (key == user?.uId) {
+            if (mounted) {
+              // Check if the widget is still mounted
+              setState(() {
+                userRealTime =
+                    UserModel.fromJson(Map<String, dynamic>.from(value as Map));
+              });
+            }
+          }
+        });
+      }
+    }, onError: (error) {
+      print('Error occurred: $error');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,29 +87,17 @@ class _UserProfileState extends State<UserProfile> {
                   ),
                 ),
               ),
+              get10height(),
               Text(
-                user?.name ?? "N/A",
+                userRealTime?.name ?? "N/A",
                 style:
                     const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
               Text(
-                user?.email ?? "N/A",
+                userRealTime?.email ?? "N/A",
                 style: const TextStyle(color: Colors.grey, fontSize: 18),
               ),
-              const SizedBox(
-                height: 15,
-              ),
-              // Wrap(
-              //   alignment: WrapAlignment.center,
-              //   children: [
-              //     getCard(name: "Reward Point", value: "360"),
-              //     getCard(name: "Booked Points", value: "238"),
-              //     getCard(name: "Bucket Point", value: "473"),
-              //   ],
-              // ),
-              const SizedBox(
-                height: 15,
-              ),
+              get10height(),
               // Insert the list widget here
               const Expanded(child: ProfileMenuList()),
             ],
@@ -144,13 +143,13 @@ class ProfileMenuList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        // ProfileMenuItem(
-        //   icon: Icons.person_outline,
-        //   text: "Profile",
-        //   onTap: () {
-        //     Navigator.pushNamed(context, "/edit_profile_screen");
-        //   },
-        // ),
+        ProfileMenuItem(
+          icon: Icons.person_outline,
+          text: "Edit Profile",
+          onTap: () {
+            Navigator.pushNamed(context, "/edit_profile_screen");
+          },
+        ),
         ProfileMenuItem(
           icon: Icons.track_changes,
           text: "Track your request",

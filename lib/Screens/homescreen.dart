@@ -20,6 +20,33 @@ class _HomeScreenState extends State<HomeScreen> {
   final PageController pageController = PageController(initialPage: 0);
   List<Shop> _shopList = []; // State variable to hold shops
   UserModel? user;
+  UserModel? userRealTime;
+
+  getUserDataFromFirebase() {
+    Query query = FirebaseDatabase.instance.ref("Users");
+    query.onValue.listen((DatabaseEvent event) {
+      final snapshot = event.snapshot;
+      final data = snapshot.value as Map<Object?, Object?>?;
+
+      // Ensure that the data is a Map with a proper key-value structure
+      if (data != null) {
+        data.forEach((key, value) {
+          if (key == user?.uId) {
+            // Ensure the widget is still mounted before calling setState
+            if (mounted) {
+              setState(() {
+                // Cast the value to Map<String, dynamic> and create UserModel
+                userRealTime =
+                    UserModel.fromJson(Map<String, dynamic>.from(value as Map));
+              });
+            }
+          }
+        });
+      }
+    }, onError: (error) {
+      print('Error occurred: $error');
+    });
+  }
 
   setUpNotification() async {
     NotificationService notificationService = NotificationService();
@@ -52,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
       Map<String, dynamic> userMap = jsonDecode(userJson);
       setState(() {
         user = UserModel.fromJson(userMap);
+        getUserDataFromFirebase();
       });
     }
   }
@@ -91,8 +119,8 @@ class _HomeScreenState extends State<HomeScreen> {
             backgroundColor: Colors
                 .blue, // Set a background color or use a color from the user's profile
             child: Text(
-              user?.name?.isNotEmpty == true
-                  ? user!.name![0].toUpperCase()
+              userRealTime?.name?.isNotEmpty == true
+                  ? userRealTime!.name![0].toUpperCase()
                   : '?', // First letter of the name
               style: const TextStyle(
                 color: Colors.white,
@@ -107,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         // backgroundColor: const Color(0xFFf7f7f9),
-        title: Text("Hello, ${user?.name}"),
+        title: Text("Hello, ${userRealTime?.name}"),
         // actions: [
         //   IconButton(
         //     onPressed: () {},
