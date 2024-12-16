@@ -259,7 +259,7 @@ class Home extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  "Explore the",
+                  "Explore",
                   style: TextStyle(fontSize: 35),
                 ),
               ], //
@@ -267,11 +267,11 @@ class Home extends StatelessWidget {
             const Row(
               children: [
                 Text(
-                  "beautiful",
+                  "EzyBook's",
                   style: TextStyle(fontSize: 35),
                 ),
                 Text(
-                  "  Services",
+                  " Services",
                   style: TextStyle(color: Colors.green, fontSize: 35),
                 ),
               ],
