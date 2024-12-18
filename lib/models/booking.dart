@@ -9,6 +9,7 @@ class Booking {
   String shopNumber;
   String shopName;
   String shopAddress;
+  String mapLink;
   String date;
   String reachOutTime;
   List<ShopService>? shopServices;
@@ -27,6 +28,7 @@ class Booking {
     required this.shopNumber,
     required this.shopName,
     required this.shopAddress,
+    required this.mapLink,
     required this.date,
     required this.reachOutTime,
     this.shopServices,
@@ -69,6 +71,7 @@ class Booking {
       shopCategory: json['shopCategory'] ?? '',
       shopName: json['shopName'] ?? '',
       shopAddress: json['shopAddress'] ?? '',
+      mapLink: json['mapLink'],
       date: json['date'] ?? '',
       reachOutTime: json['reachOutTime'] ?? '',
       shopServices: shopServices,
@@ -101,6 +104,7 @@ class Booking {
     data['shopName'] = shopName;
     data['shopCategory'] = shopCategory;
     data['shopAddress'] = shopAddress;
+    data['mapLink'] = mapLink;
     data['date'] = date;
     data['reachOutTime'] = reachOutTime;
     return data;

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ezybook/models/user.dart';
+import 'package:ezybook/widgets/dialog.dart';
 import 'package:ezybook/widgets/snakbar.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -109,9 +110,11 @@ class _EditProfileState extends State<EditProfile> {
               if (_formKey.currentState?.validate() ?? false) {
                 // print('Full Name: ${_fullNameController.text.trim()}');
                 // print('Mobile Number: ${_mobileNumberController.text.trim()}');
+                showLoadingDialog(context);
                 await updateUserData(_fullNameController.text.trim(),
                     _mobileNumberController.text.trim());
                 if (!mounted) return;
+                dismissLoadingDialog();
                 getSnakbar("Profile Updated!", context);
               }
             },
@@ -160,13 +163,37 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   Future<void> updateUserData(String name, String number) async {
-    DatabaseReference reference =
+    DatabaseReference userReference =
         FirebaseDatabase.instance.ref("Users").child(user?.uId ?? "");
+    Query bookingReference = FirebaseDatabase.instance
+        .ref("Booking")
+        .orderByChild("userId")
+        .equalTo(user?.uId ?? "");
 
     try {
-      await reference.update({"name": name, "number": number});
+      // Update the name and number in the Users table
+      await userReference.update({"name": name, "number": number});
+
+      // Fetch all bookings for the user
+      DataSnapshot snapshot = await bookingReference.get();
+      if (snapshot.exists) {
+        Map<Object?, Object?> bookings =
+            snapshot.value as Map<Object?, Object?>;
+
+        // Loop through each booking and update the name and number
+        bookings.forEach((key, value) {
+          if (value is Map<Object?, Object?>) {
+            // Reference to the specific booking
+            DatabaseReference bookingRef =
+                FirebaseDatabase.instance.ref("Booking").child(key.toString());
+
+            // Update the name and number in the Booking table
+            bookingRef.update({"customerName": name, "userNumber": number});
+          }
+        });
+      }
     } catch (e) {
-      print(e);
+      print("Error updating data: $e");
     }
   }
 

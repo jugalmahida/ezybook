@@ -1,5 +1,6 @@
 import 'package:ezybook/models/booking.dart';
 import 'package:ezybook/widgets/button.dart';
+import 'package:ezybook/widgets/dialog.dart';
 import 'package:ezybook/widgets/sizedbox.dart';
 import 'package:ezybook/widgets/snakbar.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -105,7 +106,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                               children: [
                                 get10height(),
                                 const Text(
-                                  "Request Send to Owner",
+                                  "Request Send",
                                   style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold),
@@ -173,6 +174,25 @@ class _SummaryScreenState extends State<SummaryScreen> {
                             ),
                           ),
                         ],
+                      ),
+                      TextButton.icon(
+                        icon: const Icon(Icons.location_on),
+                        onPressed: () async {
+                          final Uri uri =
+                              Uri.parse(SummaryScreen.booking?.mapLink ?? "");
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri);
+                          } else {
+                            // Optionally show a snackbar or dialog for error feedback
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    'Could not launch ${SummaryScreen.booking?.mapLink}'),
+                              ),
+                            );
+                          }
+                        },
+                        label: const Text("Show in maps"),
                       ),
                       // Displaying shop services
                       SummaryScreen.booking?.shopCategory == "Salon"
@@ -258,7 +278,7 @@ class _SummaryScreenState extends State<SummaryScreen> {
                                 // Displaying the total amount
                                 get10height(),
                                 Text(
-                                  "Total Amount: ₹${SummaryScreen.booking!.totalFee ?? "N/A"}",
+                                  "₹${SummaryScreen.booking!.totalFee ?? "N/A"}",
                                   style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
@@ -267,35 +287,40 @@ class _SummaryScreenState extends State<SummaryScreen> {
                               ],
                             )
                           : const SizedBox(),
-                      get10height(),
-                      TextButton.icon(
-                        onPressed: () async {
-                          TimeOfDay selectDateTime =
-                              TimeOfDay.now(); // Default to current time
 
-                          final TimeOfDay? picked = await showTimePicker(
-                            context: context,
-                            initialTime: selectDateTime, // Set the initial time
-                          );
+                      // Change reachout time button
+                      SummaryScreen.booking?.status != "Completed"
+                          ? TextButton.icon(
+                              onPressed: () async {
+                                TimeOfDay selectDateTime =
+                                    TimeOfDay.now(); // Default to current time
 
-                          // If the user selects a time (not null), update the selected time
-                          if (picked != null) {
-                            setState(() {
-                              selectDateTime = picked;
-                              // print(picked.format(context));
-                              bookingRef.update(
-                                  {"reachOutTime": picked.format(context)});
-                            });
-                          }
-                        },
-                        icon: const Icon(Icons.access_time_rounded),
-                        label: const Text(
-                          "Change ReachOut Time",
-                          style: TextStyle(
-                            fontSize: 16,
-                          ),
-                        ),
-                      ),
+                                final TimeOfDay? picked = await showTimePicker(
+                                  context: context,
+                                  initialTime:
+                                      selectDateTime, // Set the initial time
+                                );
+
+                                // If the user selects a time (not null), update the selected time
+                                if (picked != null) {
+                                  setState(() {
+                                    selectDateTime = picked;
+                                    // print(picked.format(context));
+                                    bookingRef.update({
+                                      "reachOutTime": picked.format(context)
+                                    });
+                                  });
+                                }
+                              },
+                              icon: const Icon(Icons.access_time_rounded),
+                              label: const Text(
+                                "Change ReachOut Time",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
                       TextButton.icon(
                         onPressed: () async {
                           Uri phoneUri = Uri.parse(
@@ -311,109 +336,186 @@ class _SummaryScreenState extends State<SummaryScreen> {
                         ),
                       ),
                       get10height(),
-                      getMainButton(
-                          onPressed: () {
-                            final reasons = [
-                              "Today, I am Busy!!!",
-                              "Other (please specify)",
-                            ];
 
-                            TextEditingController customController =
-                                TextEditingController();
+                      SummaryScreen.booking?.status != "Completed"
+                          ?
+                          // Cancel Button
+                          getMainButton(
+                              onPressed: () {
+                                final reasons = [
+                                  "Today, I am Busy!!!",
+                                  "Other (please specify)",
+                                ];
 
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                String?
-                                    selectedReason; // Move this inside the builder
+                                TextEditingController customController =
+                                    TextEditingController();
 
-                                return AlertDialog(
-                                  title: const Text("Select a cancel reason"),
-                                  content: StatefulBuilder(
-                                    builder: (context, setState) {
-                                      return Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          // Radio buttons for selecting a reason
-                                          for (var reason in reasons)
-                                            ListTile(
-                                              title: Text(reason),
-                                              leading: Radio<String>(
-                                                value: reason,
-                                                groupValue: selectedReason,
-                                                onChanged: (value) {
-                                                  setState(() {
-                                                    selectedReason = value;
-                                                    if (value !=
-                                                        "Other (please specify)") {
-                                                      customController
-                                                          .clear(); // Clear custom message if a reason is selected
-                                                    }
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          // Text field for custom message
-                                          if (selectedReason ==
-                                              "Other (please specify)")
-                                            TextField(
-                                              controller: customController,
-                                              decoration: const InputDecoration(
-                                                labelText: 'Please specify',
-                                              ),
-                                            ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      child: const Text("Cancel"),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        selectedReason = selectedReason?.trim();
-                                        if (selectedReason != null) {
-                                          // Handle the selected reason and optional custom message
-                                          if (selectedReason ==
-                                              "Other (please specify)") {
-                                            if (customController.text
-                                                .trim()
-                                                .isEmpty) {
-                                              getSnakbar("Please give a reason",
+                                showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    String?
+                                        selectedReason; // Move this inside the builder
+
+                                    return AlertDialog(
+                                      title:
+                                          const Text("Select a cancel reason"),
+                                      content: StatefulBuilder(
+                                        builder: (context, setState) {
+                                          return Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              // Radio buttons for selecting a reason
+                                              for (var reason in reasons)
+                                                RadioListTile<String>(
+                                                  title: Text(reason),
+                                                  value: reason,
+                                                  groupValue: selectedReason,
+                                                  onChanged: (value) {
+                                                    setState(() {
+                                                      selectedReason = value;
+                                                      if (value !=
+                                                          "Other (please specify)") {
+                                                        customController
+                                                            .clear(); // Clear custom message if a reason is selected
+                                                      }
+                                                    });
+                                                  },
+                                                ),
+                                              // Text field for custom message
+                                              if (selectedReason ==
+                                                  "Other (please specify)")
+                                                TextField(
+                                                  controller: customController,
+                                                  decoration:
+                                                      const InputDecoration(
+                                                    labelText: 'Please specify',
+                                                  ),
+                                                ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            selectedReason =
+                                                selectedReason?.trim();
+                                            if (selectedReason != null) {
+                                              // Handle the selected reason and optional custom message
+                                              if (selectedReason ==
+                                                  "Other (please specify)") {
+                                                if (customController.text
+                                                    .trim()
+                                                    .isEmpty) {
+                                                  getSnakbar(
+                                                      "Please give a reason",
+                                                      context);
+                                                  return;
+                                                }
+                                              }
+
+                                              var upData = {
+                                                "status": "Cancel",
+                                                "cancelReason": selectedReason ==
+                                                        "Other (please specify)"
+                                                    ? "${SummaryScreen.booking?.customerName} said, ${customController.text.trim()}"
+                                                    : "${SummaryScreen.booking?.customerName} said, $selectedReason",
+                                                "numberOfSeatorTable": 0,
+                                              };
+                                              // Update booking reference
+                                              bookingRef.update(upData);
+                                              Navigator.of(context)
+                                                  .pop(); // Close the dialog
+                                            } else {
+                                              // Show a Snackbar if no reason is selected
+                                              getSnakbar(
+                                                  "Please select a reason",
                                                   context);
-                                              return;
                                             }
-                                          }
-
-                                          var upData = {
-                                            "status": "Cancel",
-                                            "cancelReason": selectedReason ==
-                                                    "Other (please specify)"
-                                                ? customController.text.trim()
-                                                : selectedReason,
-                                            "numberOfSeatorTable": 0,
-                                          };
-                                          // Update booking reference
-                                          bookingRef.update(upData);
-                                          Navigator.of(context)
-                                              .pop(); // Close the dialog
-                                        } else {
-                                          // Show a Snackbar if no reason is selected
-                                          getSnakbar("Please select a reason",
-                                              context);
-                                        }
-                                      },
-                                      child: const Text("Submit"),
-                                    ),
-                                  ],
+                                          },
+                                          child: const Text("Submit"),
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 );
                               },
-                            );
-                          },
-                          name: "Cancel Request"),
+                              name: "Cancel Request")
+                          : const SizedBox.shrink(),
+                      SummaryScreen.booking?.status == "Completed"
+                          ? TextButton.icon(
+                              icon: const Icon(Icons.delete),
+                              onPressed: () async {
+                                print(SummaryScreen.booking?.bookingId);
+
+                                bool shouldDelete = await showDialog(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return AlertDialog(
+                                          title: const Text("Delete Booking"),
+                                          content: const Text(
+                                              "Are you sure you want to delete this booking?"),
+                                          actions: <Widget>[
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context)
+                                                    .pop(false); // Cancel
+                                              },
+                                              child: const Text("Cancel"),
+                                            ),
+                                            TextButton(
+                                              onPressed: () {
+                                                Navigator.of(context).pop(
+                                                    true); // Confirm delete
+                                              },
+                                              child: const Text("Delete"),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ) ??
+                                    false;
+
+                                // Proceed with deletion if confirmed
+                                if (shouldDelete) {
+                                  // Show loading dialog
+                                  showLoadingDialog(context);
+
+                                  try {
+                                    // Delete the booking from Firebase
+
+                                    await bookingRef.remove();
+
+                                    // Close the loading dialog
+                                    Navigator.of(context).pop();
+
+                                    // Navigate to the home screen, if still mounted
+                                    if (mounted) {
+                                      Navigator.pushReplacementNamed(
+                                          context, '/home_screen');
+                                    }
+                                  } catch (error) {
+                                    // Close the loading dialog
+                                    Navigator.of(context).pop();
+
+                                    // Show error message
+                                    if (mounted) {
+                                      getSnakbar(
+                                        "Failed to delete the booking. Please try again.",
+                                        context,
+                                      );
+                                    }
+                                  }
+                                }
+                              },
+                              label: const Text("Delete Booking"),
+                            )
+                          : const SizedBox.shrink(),
                     ],
                   ),
           ),

@@ -43,6 +43,12 @@ class NotificationService {
             title: "Oops! Request Canceled",
             body: "$shopName cancel your request, because $cancelReason",
           );
+        } else if (status == "Completed") {
+          // Trigger local notification when booking is canceled
+          showNotification(
+            title: "Thank You $customerName, Visit again.",
+            body: "Your request is completed.",
+          );
         } else {}
       }
     });
