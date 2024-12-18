@@ -17,9 +17,29 @@ class RequestsScreen extends StatefulWidget {
 
 class _RequestsScreenState extends State<RequestsScreen> {
   List<Booking>? requestedBooking = [];
+  List<Booking>? filteredBookings = [];
   Shop? shop;
   StreamSubscription<DatabaseEvent>? _subscription; // Declare the subscription
   Query? bookingQuery;
+  TextEditingController searchController =
+      TextEditingController(); // Controller for the search field
+
+  @override
+  void initState() {
+    super.initState();
+    getBookingData();
+    searchController.addListener(() {
+      filterBookings();
+    });
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel(); // Cancel the subscription
+    searchController.dispose(); // Dispose of the search controller
+    super.dispose();
+  }
+
   getBookingData() async {
     UserModel? user;
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -55,6 +75,8 @@ class _RequestsScreenState extends State<RequestsScreen> {
           // Check if the widget is still mounted
           setState(() {
             requestedBooking = newBookings;
+            filteredBookings =
+                newBookings; // Initially set filtered bookings to all bookings
             bookingQuery = query;
           });
         }
@@ -62,20 +84,24 @@ class _RequestsScreenState extends State<RequestsScreen> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    getBookingData();
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel(); // Cancel the subscription
-    super.dispose();
+  void filterBookings() {
+    String query = searchController.text.toLowerCase();
+    if (query.isEmpty) {
+      setState(() {
+        filteredBookings = requestedBooking; // No filter if search is empty
+      });
+    } else {
+      setState(() {
+        filteredBookings = requestedBooking?.where((booking) {
+          return booking.shopName.toLowerCase().contains(query) ||
+              booking.status.toLowerCase().contains(query) ||
+              booking.date.toLowerCase().contains(query);
+        }).toList();
+      });
+    }
   }
 
   void _deleteBookingById(String bookingId) async {
-    // print(bookingQuery?.ref.child(bookingId));
     await bookingQuery?.ref // Reference the root of the database
         .child(bookingId) // The specific booking by ID
         .remove();
@@ -87,88 +113,110 @@ class _RequestsScreenState extends State<RequestsScreen> {
       appBar: AppBar(
         title: const Text("Track your requests"),
       ),
-      body: requestedBooking?.isNotEmpty == true // Simplified check
-          ? Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.builder(
-                itemCount: requestedBooking?.length,
-                itemBuilder: (context, index) {
-                  Booking? booking = requestedBooking?[index];
-                  return GestureDetector(
-                    onLongPress: () async {
-                      bool shouldDelete = await showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: const Text("Delete Booking"),
-                                content: const Text(
-                                    "Are you sure you want to delete this booking?"),
-                                actions: <Widget>[
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context)
-                                          .pop(false); // Cancel
-                                    },
-                                    child: const Text("Cancel"),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.of(context)
-                                          .pop(true); // Confirm delete
-                                    },
-                                    child: const Text("Delete"),
-                                  ),
-                                ],
-                              );
-                            },
-                          ) ??
-                          false;
-                      if (shouldDelete) {
-                        // print(booking?.bookingId);
-                        _deleteBookingById(booking!.bookingId);
-                        // Navigate to the home screen, if still mounted
-                        if (mounted) {
-                          Navigator.pushReplacementNamed(
-                              context, '/home_screen');
-                        }
-                      }
-                    },
-                    child: Card(
-                      child: ListTile(
-                        leading: const Icon(Icons.store),
-                        title: Text("${booking?.shopName}"),
-                        subtitle: Text(
-                          "Booking Status - ${booking?.status}",
-                          style: const TextStyle(fontSize: 15),
-                        ),
-                        trailing: Text(
-                          "Date - ${booking?.date}",
-                          style: const TextStyle(fontSize: 15),
-                        ),
-                        onTap: () {
-                          SummaryScreen.booking = booking;
-                          Navigator.pushNamed(
-                            context,
-                            "/summary_screen_screen",
-                            arguments: {
-                              "bookingID": booking?.bookingId,
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  );
-                },
-              ),
-            )
-          : const Center(
-              child: Text(
-                "No booking found",
-                style: TextStyle(
-                  fontSize: 18,
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                labelText: "Search by Shop Name, Status, or Date",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
+                suffixIcon: Icon(Icons.search),
               ),
             ),
+          ),
+          filteredBookings?.isNotEmpty == true
+              ? Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ListView.builder(
+                      itemCount: filteredBookings?.length,
+                      itemBuilder: (context, index) {
+                        Booking? booking = filteredBookings?[index];
+                        return GestureDetector(
+                          onLongPress: () async {
+                            bool shouldDelete = await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text("Delete Booking"),
+                                      content: const Text(
+                                          "Are you sure you want to delete this booking?"),
+                                      actions: <Widget>[
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context)
+                                                .pop(false); // Cancel
+                                          },
+                                          child: const Text("Cancel"),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.of(context)
+                                                .pop(true); // Confirm delete
+                                          },
+                                          child: const Text("Delete"),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ) ??
+                                false;
+                            if (shouldDelete) {
+                              _deleteBookingById(booking!.bookingId);
+                              if (mounted) {
+                                Navigator.pushReplacementNamed(
+                                    context, '/home_screen');
+                              }
+                            }
+                          },
+                          child: Card(
+                            child: ListTile(
+                              leading: const Icon(Icons.store),
+                              title: Text("${booking?.shopName}"),
+                              subtitle: booking?.shopCategory == "Salon"
+                                  ? Text(
+                                      "Status - ${booking?.status}\n₹${booking?.totalFee}",
+                                      style: const TextStyle(fontSize: 15),
+                                    )
+                                  : Text(
+                                      "Status - ${booking?.status}",
+                                      style: const TextStyle(fontSize: 15),
+                                    ),
+                              trailing: Text(
+                                "Date - ${booking?.date}",
+                                style: const TextStyle(fontSize: 15),
+                              ),
+                              onTap: () {
+                                SummaryScreen.booking = booking;
+                                Navigator.pushNamed(
+                                  context,
+                                  "/summary_screen_screen",
+                                  arguments: {
+                                    "bookingID": booking?.bookingId,
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                )
+              : const Center(
+                  child: Text(
+                    "No booking found",
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+        ],
+      ),
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:ezybook/models/user.dart';
 import 'package:ezybook/widgets/button.dart';
 import 'package:ezybook/widgets/dialog.dart';
 import 'package:ezybook/widgets/sizedbox.dart';
+import 'package:ezybook/widgets/snakbar.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -28,6 +29,12 @@ class _ShopDetailsState extends State<ShopDetails> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => checkTextOverflow());
+  }
+
+  Future<void> _launch(Uri url, BuildContext context) async {
+    await canLaunchUrl(url)
+        ? await launchUrl(url)
+        : getSnakbar('Could not launch', context);
   }
 
   void checkTextOverflow() {
@@ -97,6 +104,7 @@ class _ShopDetailsState extends State<ShopDetails> {
       shopId: _shop!.shopId!,
       shopName: _shop!.shopName!,
       shopAddress: _shop!.shopAddress!,
+      mapLink: _shop!.mapLink!,
       shopCategory: _shop!.shopCategory!,
       date: finalDate,
       shopServices: selectedServices,
@@ -259,7 +267,6 @@ class _ShopDetailsState extends State<ShopDetails> {
                 padding: const EdgeInsets.all(14.0),
                 child: SingleChildScrollView(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
                         "About Us",
@@ -299,39 +306,59 @@ class _ShopDetailsState extends State<ShopDetails> {
                           ),
                         ),
                       ),
-                      Row(
+                      Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            "Booking Date - $formattedDate",
-                            style: const TextStyle(fontSize: 17),
+                          Row(
+                            children: [
+                              Text(
+                                "Shop Number - ${shop.shopNumber}",
+                                style: const TextStyle(fontSize: 17),
+                              ),
+                              TextButton(
+                                child: const Icon(Icons.call),
+                                onPressed: () {
+                                  Uri phoneUri = Uri.parse(
+                                      'tel:${shop.shopNumber}'); // Phone number you want to dial
+                                  _launch(phoneUri, context);
+                                },
+                              ),
+                            ],
                           ),
-                          TextButton(
-                            child: const Icon(Icons.calendar_month_rounded),
-                            onPressed: () {
-                              _selectDate(context);
-                            },
+                          Row(
+                            children: [
+                              Text(
+                                "Booking Date - $formattedDate",
+                                style: const TextStyle(fontSize: 17),
+                              ),
+                              TextButton(
+                                child: const Icon(Icons.calendar_month_rounded),
+                                onPressed: () {
+                                  _selectDate(context);
+                                },
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "Reachout Time - ${selectedTime.format(context)}",
-                            style: const TextStyle(fontSize: 17),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              _selectTime(context);
-                            },
-                            child: const Icon(Icons.access_time_rounded),
+                          Row(
+                            children: [
+                              Text(
+                                "Reachout Time - ${selectedTime.format(context)}",
+                                style: const TextStyle(fontSize: 17),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  _selectTime(context);
+                                },
+                                child: const Icon(Icons.access_time_rounded),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                       const Text(
-                        "Note :- Reachout time must be between shop starting time and ending time",
-                        style: TextStyle(fontSize: 16),
+                        "Note:- Reachout time must be within shop timing, else your request will be rejected.",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                       if (shopServices?.isNotEmpty ?? false)
                         Column(
