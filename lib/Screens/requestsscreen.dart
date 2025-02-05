@@ -124,7 +124,7 @@ class _RequestsScreenState extends State<RequestsScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
                 ),
-                suffixIcon: Icon(Icons.search),
+                suffixIcon: const Icon(Icons.search),
               ),
             ),
           ),
