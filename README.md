@@ -62,26 +62,38 @@ flutter run
 
 # App Screenshots
 
-1. Home Page
-![Home Page](/assets/images/SS/Home.jpg)
+<table>
+  <tr>
+    <td><img src="/assets/images/SS/Home.jpg" alt="Home Page" width="300"/></td>
+    <td><img src="/assets/images/SS/ShopDetails.jpg" alt="Shop Details" width="300"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Home Page</b></td>
+    <td align="center"><b>Shop Detail Page</b></td>
+  </tr>
+  <tr>
+    <td><img src="/assets/images/SS/SelectRequestedServices.jpg" alt="Selecting Services" width="300"/></td>
+    <td><img src="/assets/images/SS/RequestSend.jpg" alt="Booking Request" width="300"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Selecting Services</b></td>
+    <td align="center"><b>Booking Request Sent</b></td>
+  </tr>
+  <tr>
+    <td><img src="/assets/images/SS/RequestConfim.jpg" alt="Request Confirmed" width="300"/></td>
+    <td><img src="/assets/images/SS/Maps.jpg" alt="Google Maps" width="300"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Request Accepted</b></td>
+    <td align="center"><b>Google Maps</b></td>
+  </tr>
+  <tr>
+    <td><img src="/assets/images/SS/Search.jpg" alt="Search Page" width="300"/></td>
+    <td><img src="/assets/images/SS/TrackRequest.jpg" alt="Track Request" width="300"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Search Page</b></td>
+    <td align="center"><b>Track Requests</b></td>
+  </tr>
+</table>
 
-2. Shop Detail Page
-![Shop Details](/assets/images/SS/ShopDetails.jpg)
-
-3. Shop Detail Page (Selecting Services)
-![Seleting services](/assets/images/SS/SelectRequestedServices.jpg)
-
-3. Booking request (Selecting Services)
-![Seleting services](/assets/images/SS/RequestSend.jpg)
-
-4. Request Accepted
-![Seleting services](/assets/images/SS/RequestConfim.jpg)
-
-5. Maps with shop's coordinates(Google Maps)
-![Seleting services](/assets/images/SS/Maps.jpg)
-
-6. Search Page 
-![Seleting services](/assets/images/SS/Search.jpg)
-
-7. Track requests
-![Seleting services](/assets/images/SS/TrackRequest.jpg)
